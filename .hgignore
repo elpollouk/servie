@@ -1,0 +1,4 @@
+glob:bin/*
+glob:obj/*
+glob:*.user
+glob:*.suo
