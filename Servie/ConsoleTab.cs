@@ -9,10 +9,7 @@ namespace Servie
 
         public ServiceDetails.Service Service
         {
-            get
-            {
-                return m_Service;
-            }
+            get { return m_Service; }
         }
 
         public ConsoleTab(ServiceDetails.Service service)
@@ -37,7 +34,7 @@ namespace Servie
 
             if (InvokeRequired)
             {
-                this.Invoke(new Action<string>(AddText), new object[] { text });
+                BeginInvoke(new Action<string>(AddText), text );
                 return;
             }
 
@@ -87,7 +84,7 @@ namespace Servie
             }
             else
             {
-                ServiceDetails.ServiceLoader.StartService(m_Service, OnStartComplete, Program.MainWindow.DisplayServiceLoadError);
+                ServiceDetails.ServiceLoader.StartService(m_Service, OnStartComplete, null);
             }
         }
 
