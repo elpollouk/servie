@@ -1,0 +1,52 @@
+<xml>
+<!--
+  Enable this tag if you want Servie to completely ignore this service.
+  <ignore>true</ignore>
+-->
+<!--
+  Set this property if you want to use a different display name for this service.
+  <name>Custom Service Name</name>
+-->
+<!--
+  Enable this tag if you want Servie to start the service automatically when it launches.
+-->
+  <autostart>true</autostart>
+
+<!--
+  Specifies the start command to use
+-->
+  <start>
+    <exec>
+    <!--
+      This only needs to be set if the working dir is different to the server base dir.
+      <workingdir>\some\other\path</workingdir>
+    -->
+      <executable>bin\catalina.bat</executable>
+      <args>start</args>
+      <env>
+        <!-- JDK -->
+        <JAVA_HOME>packages\jdk</JAVA_HOME>
+      </env>
+    </exec>
+  </start>
+  
+<!--
+  Specifies the stop command to use.
+-->
+  <stop>
+  <!--
+    Sends a console signal to the service to stop it.
+    Valid signals are:
+      CTRL_C
+      CTRL_BREAK
+      CTRL_CLOSE
+      CTRL_LOGOFF
+      CTRL_SHUTDOWN
+  -->
+    <signal>CTRL_C</signal>
+  <!--
+    Kills the process to end the service
+    <kill/>
+  -->
+  </stop>
+</xml>

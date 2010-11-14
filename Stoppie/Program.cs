@@ -27,25 +27,49 @@ namespace Stoppie
             CTRL_SHUTDOWN = 6
         }
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             if ((args != null) && (args.Length > 0))
             {
                 int processId = int.Parse(args[0]);
                 if (processId != 0)
                 {
-                    FreeConsole();
-                    AttachConsole(processId);
-                    GenerateConsoleCtrlEvent(ConsoleCtrlEvent.CTRL_C, 0);
+                    ConsoleCtrlEvent signal;
+                    if (args.Length > 1)
+                    {
+                        // A signal has been specified
+                        try
+                        {
+                            signal = (ConsoleCtrlEvent)Enum.Parse(typeof(ConsoleCtrlEvent), args[1]);
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Invalid signal specified.");
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        signal = ConsoleCtrlEvent.CTRL_C;
+                    }
+                    bool r = FreeConsole();
+                    if (r == false) return -2;
+                    r = AttachConsole(processId);
+                    if (r == false) return -3;
+                    r = GenerateConsoleCtrlEvent(signal, 0);
+                    if (r == false) return -4;
+                    return 0;
                 }
                 else
                 {
                     Console.WriteLine("Invalid process id specified.");
+                    return -1;
                 }
             }
             else
             {
                 Console.WriteLine("No process id specified.");
+                return -1;
             }
         }
     }

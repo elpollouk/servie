@@ -61,7 +61,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Constants.cs" />
     <Compile Include="ConsoleTab.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -76,6 +75,10 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceDetails\IStopCommand.cs" />
+    <Compile Include="ServiceDetails\KillStopCommand.cs" />
+    <Compile Include="ServiceDetails\Service.cs" />
+    <Compile Include="ServiceDetails\StoppieStopCommand.cs" />
     <EmbeddedResource Include="ConsoleTab.resx">
       <DependentUpon>ConsoleTab.cs</DependentUpon>
     </EmbeddedResource>

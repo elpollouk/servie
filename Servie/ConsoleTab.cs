@@ -1,94 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace Servie
 {
     public partial class ConsoleTab : TabPage
     {
-        private Process m_Process;
-        private string m_Command;
-        private bool m_IsRunning = false;
+        private ServiceDetails.Service m_Service;
 
-        public ConsoleTab(string command, string args = null, Dictionary<string, string> environment = null)
+        public ServiceDetails.Service Service
+        {
+            get
+            {
+                return m_Service;
+            }
+        }
+
+        public ConsoleTab(ServiceDetails.Service service)
         {
             InitializeComponent();
 
-            m_Command = command;
+            m_Service = service;
 
-            m_Process = new Process();
-            m_Process.StartInfo.UseShellExecute = false;
-            m_Process.StartInfo.CreateNoWindow = true;
-            m_Process.StartInfo.RedirectStandardOutput = true;
-            m_Process.StartInfo.RedirectStandardError = true;
+            m_Service.OutputDataReceived += OnOutputDataReceived;
+            m_Service.ErrorDataReceived += OnOutputDataReceived;
+            m_Service.Started += OnStarted;
+            m_Service.Ended += OnEnded;
 
-            if (args != null)
-            {
-                m_Process.StartInfo.Arguments = args;
-            }
-
-            if (environment != null)
-            {
-                foreach (KeyValuePair<string, string> var in environment)
-                {
-                    m_Process.StartInfo.EnvironmentVariables.Add(var.Key, var.Value);
-                }
-            }
-
-            m_Process.EnableRaisingEvents = true;
-
-            m_Process.OutputDataReceived += OnOutputDataReceived;
-            m_Process.ErrorDataReceived += OnOutputDataReceived;
-            m_Process.Exited += OnEnded;
-
-            m_Process.StartInfo.FileName = m_Command;
-
+            Text = service.Name;
             cmdStartStop.Text = "Start";
-        }
-
-        public bool Start()
-        {
-            AddText("Starting " + m_Command + "...\n");
-            m_IsRunning = true;
-            bool r = m_Process.Start();
-            if (r == false)
-            {
-                AddText("Failed.");
-            }
-            else
-            {
-                m_Process.BeginOutputReadLine();
-                m_Process.BeginErrorReadLine();
-                AddText("Process id = " + m_Process.Id + "\n");
-
-                cmdStartStop.Text = "Stop";
-            }
-
-            return r;
-        }
-
-        public void Stop()
-        {
-            if (IsRunning)
-            {
-                Process p = new Process();
-                p.StartInfo.UseShellExecute = false;
-                p.StartInfo.CreateNoWindow = true;
-                p.StartInfo.FileName = Constants.kStoppiePath;
-                p.StartInfo.Arguments = m_Process.Id.ToString();
-
-                p.Start();
-                p.WaitForExit();
-                p.Close();
-
-                cmdStartStop.Text = "Start";
-            }
-        }
-
-        public bool IsRunning
-        {
-            get { return m_IsRunning; }
+            DoubleBuffered = true;
         }
 
         private void AddText(string text)
@@ -104,33 +44,38 @@ namespace Servie
             txtConsole.AppendText(text);
         }
 
-        private void OnOutputDataReceived(object sender, DataReceivedEventArgs outLine)
+        private void OnOutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs outLine)
         {
             AddText(outLine.Data + "\n");
         }
 
-        private void OnEnded(object sender, EventArgs e)
+        private void OnStarted(object sender, EventArgs e)
         {
-//            string data = m_Process.StandardOutput.ReadToEnd();
-//            AddText(data);
-            m_IsRunning = false;
-            AddText("\nService exited with " + m_Process.ExitCode + "\n");
-
-            m_Process.CancelOutputRead();
-            m_Process.CancelErrorRead();
-            m_Process.Close();
+            AddText("Starting service...\n");
+            cmdStartStop.Text = "Stop";
         }
 
+        private void OnEnded(object sender, EventArgs e)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new EventHandler(OnEnded), sender, e);
+                return;
+            }
+
+            AddText("\nService exited with " + m_Service.ExitCode + "\n");
+            cmdStartStop.Text = "Start";
+        }
 
         private void cmdStartStop_Click(object sender, EventArgs e)
         {
-            if (m_IsRunning)
+            if (m_Service.IsRunning)
             {
-                Stop();
+                m_Service.Stop();
             }
             else
             {
-                Start();
+                m_Service.Start();
             }
         }
 

@@ -1,0 +1,13 @@
+<xml>
+  <name>Dummy Service</name>
+  
+  <start>
+    <exec>
+      <executable>bin\stoppie.exe</executable>
+    </exec>
+  </start>
+
+  <stop>
+    <signal>CTRL_C</signal>
+  </stop>
+</xml>

@@ -29,15 +29,12 @@
         private void InitializeComponent()
         {
             this.tabOverview = new System.Windows.Forms.TabPage();
-            this.button1 = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabOverview.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabOverview
             // 
-            this.tabOverview.Controls.Add(this.button1);
             this.tabOverview.Location = new System.Drawing.Point(4, 22);
             this.tabOverview.Name = "tabOverview";
             this.tabOverview.Padding = new System.Windows.Forms.Padding(3);
@@ -45,16 +42,6 @@
             this.tabOverview.TabIndex = 0;
             this.tabOverview.Text = "Overview";
             this.tabOverview.UseVisualStyleBackColor = true;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(410, 169);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // tabControl1
             // 
@@ -78,7 +65,7 @@
             this.Name = "Main";
             this.Text = "Servie";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
-            this.tabOverview.ResumeLayout(false);
+            this.Load += new System.EventHandler(this.Main_Load);
             this.tabControl1.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -87,7 +74,6 @@
         #endregion
 
         private System.Windows.Forms.TabPage tabOverview;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TabControl tabControl1;
 
     }
