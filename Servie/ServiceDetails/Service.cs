@@ -25,7 +25,7 @@ namespace Servie.ServiceDetails
         private bool m_IsRunning = false;
         private int m_ExitCode = 0;
         private bool m_Autostart = false;
-        private int m_WaitTime = 0;
+        private int m_StartWaitTime = 0;
         private bool m_Ignore = false;
 
         #region Handlers for process events
@@ -101,9 +101,9 @@ namespace Servie.ServiceDetails
             get { return m_Autostart; }
         }
 
-        public int WaitTime
+        public int StartWaitTime
         {
-            get { return m_WaitTime; }
+            get { return m_StartWaitTime; }
         }
         #endregion
 
@@ -187,11 +187,6 @@ namespace Servie.ServiceDetails
             {
                 m_Autostart = (x.Value.ToLower() == "true");
             }
-            x = root.Element("wait");
-            if (x != null)
-            {
-                m_WaitTime = int.Parse(x.Value);
-            }
 
             x = root.Element("start");
             if (x != null) ParseStart(x);
@@ -205,6 +200,12 @@ namespace Servie.ServiceDetails
         {
             XElement x = node.Element("exec");
             if (x != null) ParseExec(m_Process.StartInfo, x);
+
+            x = node.Element("wait");
+            if (x != null)
+            {
+                m_StartWaitTime = int.Parse(x.Value);
+            }
         }
 
         // Parse tthe stop command

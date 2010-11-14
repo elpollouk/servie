@@ -191,9 +191,9 @@ namespace Servie.ServiceDetails
             {
                 firstService = s_AutoStartStack.Peek();
                 firstService.Start();
-                if (firstService.WaitTime != 0)
+                if (firstService.StartWaitTime != 0)
                 {
-                    _ScheduledInvoke(StartNextService, s_AutoStartStack, null, firstService.WaitTime);
+                    _ScheduledInvoke(StartNextService, s_AutoStartStack, null, firstService.StartWaitTime);
                     break;
                 }
                 else
