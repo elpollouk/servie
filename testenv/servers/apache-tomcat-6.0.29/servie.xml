@@ -5,8 +5,8 @@
 -->
 <!--
   Set this property if you want to use a different display name for this service.
-  <name>Custom Service Name</name>
 -->
+  <name>Tomcat 6.0.29</name>
 <!--
   Enable this tag if you want Servie to start the service automatically when it launches.
 -->
@@ -30,7 +30,7 @@
       </env>
     </exec>
     <!--
-      Wait delay after starting service.
+      Wait delay after starting service. If the service isn't still running after this time, it is concidered to have failed.
     -->
     <wait>3000</wait>
   </start>
