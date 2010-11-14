@@ -27,8 +27,10 @@
       <executable>bin\catalina.bat</executable>
       <args>start</args>
       <env>
-        <!-- JDK -->
-        <JAVA_HOME>packages\jdk</JAVA_HOME>
+      <!-- 
+        Environment variables required for this service.
+        <JAVA_HOME>..\..\packages\jdk</JAVA_HOME>
+      -->
       </env>
     </exec>
   </start>

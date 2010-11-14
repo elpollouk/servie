@@ -1,6 +1,6 @@
 ﻿namespace Servie
 {
-    partial class Main
+    partial class frmMain
     {
         /// <summary>
         /// Required designer variable.

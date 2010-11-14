@@ -7,8 +7,8 @@ namespace Servie.ServiceDetails
 {
     class ServiceLoader
     {
-        private const string kCommonEnvironmentPath = "packages\\servie\\environment.xenv";
-        private const string kLocalEnvironmentPath = "packages\\servie\\localconf\\environment.xenv";
+        private const string kCommonEnvironmentPath = "packages\\servie\\environment.xml";
+        private const string kLocalEnvironmentPath = "packages\\servie\\localconf\\environment.xml";
 
         public delegate void ErrorMessageHandler(string serviceName, string message);
         public delegate void ScheduledInvokeHandler(EventHandler evnt, object sender, EventArgs args, int delay);
@@ -60,7 +60,7 @@ namespace Servie.ServiceDetails
 
             if (File.Exists(kLocalEnvironmentPath))
             {
-                XDocument doc = XDocument.Load("packages\\servie\\localconf\\environment.xenv");
+                XDocument doc = XDocument.Load(kLocalEnvironmentPath);
                 if (doc != null) ParseEnvironment(doc.Root);
             }
         }
@@ -117,7 +117,7 @@ namespace Servie.ServiceDetails
             }
         }
 
-        #region Auto started
+        #region Bulk service control
         // Autostarts services
         public static void AutoStartServices(ScheduledInvokeHandler scheduledInvoke, EventHandler onAutoStartComplete, ErrorMessageHandler displayError)
         {
