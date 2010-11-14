@@ -3,3 +3,4 @@ glob:obj/*
 glob:*.user
 glob:*.suo
 glob:logs/*
+glob:*.tmp
