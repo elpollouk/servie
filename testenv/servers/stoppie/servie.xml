@@ -3,7 +3,7 @@
   
   <start>
     <exec>
-      <executable>bin\stoppie.exe</executable>
+      <executable>packages\servie\bin\stoppie.exe</executable>
     </exec>
   </start>
 

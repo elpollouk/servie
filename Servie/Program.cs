@@ -13,6 +13,8 @@ namespace Servie
         [STAThread]
         static void Main()
         {
+            ServiceDetails.ServiceLoader.LoadCommonEnvironment();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Main());

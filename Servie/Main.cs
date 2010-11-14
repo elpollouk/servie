@@ -2,6 +2,8 @@
 using System.IO;
 using System.Windows.Forms;
 
+using Servie.ServiceDetails;
+
 namespace Servie
 {
     public partial class Main : Form
@@ -15,42 +17,80 @@ namespace Servie
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Force each service to stop
-            foreach (TabPage tab in tabControl1.Controls)
+            if (!ServiceLoader.AreAllServicesStopped())
             {
-                if (tab is ConsoleTab)
+                if (timerClosing.Enabled == false)
                 {
-                    ConsoleTab ctab = tab as ConsoleTab;
-                    ctab.Service.Stop();
+                    ServiceLoader.StopAllServices();
+                    timerClosing.Enabled = true;
                 }
+                e.Cancel = true;
             }
         }
 
         private void Main_Load(object sender, EventArgs e)
         {
-            // Get a list of all the services in the environment and try to load them
-            foreach (string dir in Directory.EnumerateDirectories("servers"))
+            tabControl1.Controls.Clear();
+
+            ServiceLoader.LoadServices(DisplayServiceLoadError);
+            foreach (Service service in ServiceLoader.Services)
             {
-                try
-                {
-                    ServiceDetails.Service service = new ServiceDetails.Service(Path.GetFileName(dir));
+                ConsoleTab tab = new ConsoleTab(service);
+                tabControl1.Controls.Add(tab);
+            }
 
-                    ConsoleTab console = new ConsoleTab(service);
-                    tabControl1.Controls.Add(console);
+            ServiceLoader.AutoStartServices(this.ScheduledInvoke, OnAutoStartComplete, DisplayServiceLoadError);
+        }
 
-                    if (service.Autostart)
-                    {
-                        tabControl1.SelectedTab = console;
-                        service.Start();
-                    }
-                }
-                catch (ServiceDetails.IgnoreServiceException)
-                {
-                }
-                catch (ServiceDetails.ParserError x)
-                {
-                    MessageBox.Show(x.Message, "Failed to load " + Path.GetFileName(dir), MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+        private void OnAutoStartComplete(object sender, EventArgs e)
+        {
+            if (ServiceLoader.AreAllAutoStartServicesRunning())
+            {
+                //MessageBox.Show("All services started.");
+            }
+            else
+            {
+                MessageBox.Show("Error starting services.", "Servie");
+            }
+        }
+
+        private void DisplayServiceLoadError(string service, string message)
+        {
+            MessageBox.Show(message, service, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        #region Scheduled invoke code
+        private EventHandler m_SIEvent = null;
+        private object m_SISender = null;
+        private EventArgs m_SIArgs = null;
+
+        public void ScheduledInvoke(EventHandler evnt, object sender, EventArgs args, int delay)
+        {
+            if (m_SIEvent != null) throw new Exception("An event is already scheduled.");
+            m_SIEvent = evnt;
+            m_SISender = sender;
+            m_SIArgs = args;
+
+            timerScheduledInvoke.Interval = delay;
+            timerScheduledInvoke.Enabled = true;
+        }
+
+        private void timerScheduledInvoke_Tick(object sender, EventArgs e)
+        {
+            timerScheduledInvoke.Enabled = false;
+            m_SIEvent(m_SISender, m_SIArgs);
+            m_SIEvent = null;
+            m_SISender = null;
+            m_SIArgs = null;
+        }
+        #endregion
+
+        private void timerClosing_Tick(object sender, EventArgs e)
+        {
+            if (ServiceLoader.AreAllServicesStopped())
+            {
+                timerClosing.Enabled = false;
+                this.Close();
             }
         }
     }

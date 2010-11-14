@@ -5,6 +5,6 @@ namespace Servie.ServiceDetails
 {
     interface IStopCommand
     {
-        void Stop(Process process);
+        void Stop(Process process, bool blocking = false);
     }
 }

@@ -11,7 +11,10 @@
   Enable this tag if you want Servie to start the service automatically when it launches.
 -->
   <autostart>true</autostart>
-
+<!--
+  Wait delay after starting service.
+-->
+  <wait>1000</wait>
 <!--
   Specifies the start command to use
 -->

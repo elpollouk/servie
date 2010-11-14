@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Xml.Linq;
@@ -24,6 +25,7 @@ namespace Servie.ServiceDetails
         private bool m_IsRunning = false;
         private int m_ExitCode = 0;
         private bool m_Autostart = false;
+        private int m_WaitTime = 0;
         private bool m_Ignore = false;
 
         #region Handlers for process events
@@ -98,17 +100,27 @@ namespace Servie.ServiceDetails
         {
             get { return m_Autostart; }
         }
+
+        public int WaitTime
+        {
+            get { return m_WaitTime; }
+        }
         #endregion
 
         public Service(string name)
         {
-            m_Process = new Process();
             m_WorkingDir = "servers\\" + name; // Generate a default working dir to start with
-
             if (!File.Exists(m_WorkingDir + "\\servie.xml"))
             {
                 // No config so ignore this dir
                 throw new IgnoreServiceException();
+            }
+
+            // Create process and populate it with the default environment
+            m_Process = new Process();
+            foreach (KeyValuePair<string, string> var in ServiceLoader.CommonEnvironment)
+            {
+                m_Process.StartInfo.EnvironmentVariables.Add(var.Key, var.Value);
             }
 
             // Parse the server supplied details
@@ -174,6 +186,11 @@ namespace Servie.ServiceDetails
             if (x != null)
             {
                 m_Autostart = (x.Value.ToLower() == "true");
+            }
+            x = root.Element("wait");
+            if (x != null)
+            {
+                m_WaitTime = int.Parse(x.Value);
             }
 
             x = root.Element("start");
@@ -264,11 +281,11 @@ namespace Servie.ServiceDetails
             }
         }
 
-        public void Stop()
+        public void Stop(bool blocking = false)
         {
             if (IsRunning)
             {
-                m_StopCommand.Stop(m_Process);
+                m_StopCommand.Stop(m_Process, blocking);
             }
         }
         #endregion

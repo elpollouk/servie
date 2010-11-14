@@ -28,8 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.tabOverview = new System.Windows.Forms.TabPage();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.timerScheduledInvoke = new System.Windows.Forms.Timer(this.components);
+            this.timerClosing = new System.Windows.Forms.Timer(this.components);
             this.tabControl1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -55,6 +58,15 @@
             this.tabControl1.Size = new System.Drawing.Size(1004, 558);
             this.tabControl1.TabIndex = 0;
             // 
+            // timerScheduledInvoke
+            // 
+            this.timerScheduledInvoke.Tick += new System.EventHandler(this.timerScheduledInvoke_Tick);
+            // 
+            // timerClosing
+            // 
+            this.timerClosing.Interval = 500;
+            this.timerClosing.Tick += new System.EventHandler(this.timerClosing_Tick);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -75,6 +87,8 @@
 
         private System.Windows.Forms.TabPage tabOverview;
         private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.Timer timerScheduledInvoke;
+        private System.Windows.Forms.Timer timerClosing;
 
     }
 }

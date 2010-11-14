@@ -6,9 +6,9 @@ using System.Diagnostics;
 
 namespace Servie.ServiceDetails
 {
-    class StoppieStopCommand : IStopCommand
+    class StoppieStopCommand : StopCommandBase, IStopCommand
     {
-        private static readonly string kStoppiePath = "bin\\stoppie.exe";
+        private static readonly string kStoppiePath = "packages\\servie\\bin\\stoppie.exe";
         private string m_Signal;
 
         public StoppieStopCommand(string signal)
@@ -16,7 +16,7 @@ namespace Servie.ServiceDetails
             m_Signal = signal;
         }
 
-        public void Stop(Process process)
+        public void Stop(Process process, bool blocking)
         {
             Process p = new Process();
             p.StartInfo.UseShellExecute = false;
@@ -27,6 +27,11 @@ namespace Servie.ServiceDetails
             p.Start();
             p.WaitForExit();
             p.Close();
+
+            if (blocking)
+            {
+                BlockingStop(process);
+            }
         }
     }
 }
