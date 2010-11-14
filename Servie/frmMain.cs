@@ -50,7 +50,7 @@ namespace Servie
             }
             else
             {
-                MessageBox.Show("Error starting services.", "Servie");
+               //MessageBox.Show("Error starting services.", "Servie");
             }
         }
 
