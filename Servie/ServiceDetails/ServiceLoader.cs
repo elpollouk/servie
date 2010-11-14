@@ -11,14 +11,12 @@ namespace Servie.ServiceDetails
         private const string kLocalEnvironmentPath = "packages\\servie\\localconf\\environment.xml";
 
         public delegate void ErrorMessageHandler(string serviceName, string message);
-        public delegate void ScheduledInvokeHandler(EventHandler evnt, object sender, EventArgs args, int delay);
 
         private static ImmutableDictionary<string, Service> s_ImmutableServices = null;
         private static Dictionary<string, Service> s_Services = null;
         private static ImmutableDictionary<string, string> s_ImmutableEnv = null;
         private static Dictionary<string, string> s_Environment = null;
 
-        private static ScheduledInvokeHandler _ScheduledInvoke = null;
         private static EventHandler _OnAutoStartComplete = null;
         private static ErrorMessageHandler _DisplayError = null;
         private static Stack<Service> s_AutoStartStack = null;
@@ -119,9 +117,9 @@ namespace Servie.ServiceDetails
 
         #region Bulk service control
         // Autostarts services
-        public static void AutoStartServices(ScheduledInvokeHandler scheduledInvoke, EventHandler onAutoStartComplete, ErrorMessageHandler displayError)
+        public static void AutoStartServices(EventHandler onAutoStartComplete, ErrorMessageHandler displayError)
         {
-            _ScheduledInvoke = scheduledInvoke;
+            if (s_AutoStartStack != null) throw new Exception("Services are already being started.");
             _OnAutoStartComplete = onAutoStartComplete;
             _DisplayError = displayError;
 
@@ -139,6 +137,25 @@ namespace Servie.ServiceDetails
             StartFirstServiceOnStack();
         }
 
+        // Start a single service
+        public static void StartService(Service service, EventHandler onStartComplete, ErrorMessageHandler displayError)
+        {
+            if (s_AutoStartStack != null) throw new Exception("Services are already being started.");
+            _OnAutoStartComplete = onStartComplete;
+            _DisplayError = displayError;
+
+            s_AutoStartStack = new Stack<Service>();
+
+            // Push the service onto the stack
+            if (!service.IsRunning)
+            {
+                s_AutoStartStack.Push(service);
+            }
+
+            StartFirstServiceOnStack();
+        }
+
+        // Stop all running services
         public static void StopAllServices(bool blocking = false)
         {
             foreach (Service service in s_Services.Values)
@@ -176,6 +193,7 @@ namespace Servie.ServiceDetails
 
         private static void StartNextService(object sender, EventArgs e)
         {
+            // Pop the current service off the top of the stack and check if it managed to start
             Service service = s_AutoStartStack.Pop();
             if (!service.IsRunning)
             {
@@ -184,24 +202,29 @@ namespace Servie.ServiceDetails
             StartFirstServiceOnStack();
         }
 
+        //Starts the first service on the stack
         private static void StartFirstServiceOnStack()
         {
             Service firstService;
+            // Make sure there are services on the stack
             while (s_AutoStartStack.Count > 0)
             {
                 firstService = s_AutoStartStack.Peek();
                 firstService.Start();
                 if (firstService.StartWaitTime != 0)
                 {
-                    _ScheduledInvoke(StartNextService, s_AutoStartStack, null, firstService.StartWaitTime);
+                    // Schedule the start next service function to be called after the wait period
+                    Program.MainWindow.ScheduledInvoke(StartNextService, s_AutoStartStack, null, firstService.StartWaitTime);
                     break;
                 }
                 else
                 {
+                    // No delay after calling start, so pop it from the stack
                     s_AutoStartStack.Pop();
                 }
             }
 
+            // If there are no more services on the start, report the starting as complete
             if (s_AutoStartStack.Count == 0)
             {
                 OnAutoStartComplete();
@@ -212,9 +235,10 @@ namespace Servie.ServiceDetails
         {
             if (_OnAutoStartComplete != null) _OnAutoStartComplete(null, null);
 
+            // Clear everything out
             _OnAutoStartComplete = null;
-            _ScheduledInvoke = null;
             _DisplayError = null;
+            s_AutoStartStack = null;
         }
         #endregion
     }
