@@ -8,6 +8,9 @@ namespace Servie
 {
     public partial class frmMain : Form
     {
+        private const int kExitTimeoutTime = 30000;
+        private int m_ExitTimeout;
+
         public frmMain()
         {
             InitializeComponent();
@@ -18,6 +21,8 @@ namespace Servie
         private void Main_Load(object sender, EventArgs e)
         {
             tabControl1.Controls.Clear();
+
+            m_ExitTimeout = kExitTimeoutTime / timerClosing.Interval;
 
             ServiceLoader.LoadServices(DisplayServiceLoadError);
             foreach (Service service in ServiceLoader.Services)
@@ -44,10 +49,30 @@ namespace Servie
 
         private void timerClosing_Tick(object sender, EventArgs e)
         {
+            m_ExitTimeout--;
             if (ServiceLoader.AreAllServicesStopped())
             {
                 timerClosing.Enabled = false;
                 this.Close();
+            }
+            else if (m_ExitTimeout == 0)
+            {
+                // Timed out while exiting
+                DialogResult result = MessageBox.Show("Shutdown is taking a long time, do you want to continue waiting?", "Servie", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == System.Windows.Forms.DialogResult.Yes)
+                {
+                    m_ExitTimeout = kExitTimeoutTime / timerClosing.Interval;
+                }
+                else
+                {
+                    foreach (Service service in ServiceLoader.Services)
+                    {
+                        if (service.IsRunning)
+                        {
+                            service.Kill();
+                        }
+                    }
+                }
             }
         }
 

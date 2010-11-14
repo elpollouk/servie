@@ -72,6 +72,7 @@ namespace Servie
             AddText("\nService exited with " + m_Service.ExitCode + "\n");
             cmdStartStop.Text = "Start";
             cmdStartStop.Enabled = true;
+            timerStopping.Enabled = false;
         }
 
         private void cmdStartStop_Click(object sender, EventArgs e)
@@ -79,6 +80,11 @@ namespace Servie
             cmdStartStop.Enabled = false;
             if (m_Service.IsRunning)
             {
+                if (m_Service.StopTimeOut != 0)
+                {
+                    timerStopping.Interval = m_Service.StopTimeOut;
+                    timerStopping.Enabled = true;
+                }
                 cmdStartStop.Text = "Start";
                 m_Service.Stop();
             }
@@ -91,6 +97,20 @@ namespace Servie
         private void cmdClear_Click(object sender, EventArgs e)
         {
             txtConsole.Clear();
+        }
+
+        private void timerStopping_Tick(object sender, EventArgs e)
+        {
+            timerStopping.Enabled = false;
+            DialogResult result =  MessageBox.Show("Service has failed to stop, do you want to continue waiting?", m_Service.Name, MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (result == DialogResult.Yes)
+            {
+                timerStopping.Enabled = true;
+            }
+            else
+            {
+                m_Service.Kill();
+            }
         }
     }
 }

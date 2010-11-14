@@ -32,7 +32,7 @@
     <!--
       Wait delay after starting service.
     -->
-    <wait>1000</wait>
+    <wait>3000</wait>
   </start>
   
 <!--
@@ -53,5 +53,6 @@
     Kills the process to end the service
     <kill/>
   -->
+    <timeout>10000</timeout>
   </stop>
 </xml>

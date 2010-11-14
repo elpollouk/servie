@@ -26,6 +26,7 @@ namespace Servie.ServiceDetails
         private int m_ExitCode = 0;
         private bool m_Autostart = false;
         private int m_StartWaitTime = 0;
+        private int m_StopTimeOut = 0;
         private bool m_Ignore = false;
 
         #region Handlers for process events
@@ -104,6 +105,11 @@ namespace Servie.ServiceDetails
         public int StartWaitTime
         {
             get { return m_StartWaitTime; }
+        }
+
+        public int StopTimeOut
+        {
+            get { return m_StopTimeOut; }
         }
         #endregion
 
@@ -211,18 +217,26 @@ namespace Servie.ServiceDetails
         // Parse tthe stop command
         private void ParseStop(XElement node)
         {
-            foreach (XElement x in node.Descendants())
+            foreach (XElement n in node.Descendants())
             {
-                if (x.Name == "signal")
+                if (n.Name == "signal")
                 {
-                    m_StopCommand = new StoppieStopCommand(x.Value);
-                    return;
+                    m_StopCommand = new StoppieStopCommand(n.Value);
+                    break;
                 }
-                else if (x.Name == "kill")
+                else if (n.Name == "kill")
                 {
                     m_StopCommand = new KillStopCommand();
-                    return;
+                    break;
                 }
+            }
+
+            XElement x;
+            // Time out before prompting to kill the process
+            x = node.Element("timeout");
+            if (x != null)
+            {
+                m_StopTimeOut = int.Parse(x.Value);
             }
         }
 
@@ -291,6 +305,15 @@ namespace Servie.ServiceDetails
             {
                 m_StopCommand.Stop(m_Process, blocking);
             }
+        }
+
+        public void Kill()
+        {
+            try
+            {
+                m_Process.Kill();
+            }
+            catch { }
         }
         #endregion
 

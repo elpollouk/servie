@@ -28,9 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.txtConsole = new System.Windows.Forms.TextBox();
             this.cmdClear = new System.Windows.Forms.Button();
             this.cmdStartStop = new System.Windows.Forms.Button();
+            this.timerStopping = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // txtConsole
@@ -71,6 +73,11 @@
             this.cmdStartStop.UseVisualStyleBackColor = true;
             this.cmdStartStop.Click += new System.EventHandler(this.cmdStartStop_Click);
             // 
+            // timerStopping
+            // 
+            this.timerStopping.Enabled = false;
+            this.timerStopping.Tick += new System.EventHandler(this.timerStopping_Tick);
+            // 
             // ConsoleTab
             // 
             this.Controls.Add(this.txtConsole);
@@ -92,5 +99,6 @@
         private System.Windows.Forms.TextBox txtConsole;
         private System.Windows.Forms.Button cmdStartStop;
         private System.Windows.Forms.Button cmdClear;
+        private System.Windows.Forms.Timer timerStopping;
     }
 }
