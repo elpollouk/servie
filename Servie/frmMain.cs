@@ -63,7 +63,7 @@ namespace Servie
             }
         }
 
-        private void DisplayServiceLoadError(string service, string message)
+        public void DisplayServiceLoadError(string service, string message)
         {
             MessageBox.Show(message, service, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }

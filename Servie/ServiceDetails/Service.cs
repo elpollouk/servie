@@ -278,7 +278,10 @@ namespace Servie.ServiceDetails
                 m_Process.BeginOutputReadLine();
                 m_Process.BeginErrorReadLine();
                 m_IsRunning = true;
-                _Started(this, null);
+                if (_Started != null)
+                {
+                    _Started(this, null);
+                }
             }
         }
 

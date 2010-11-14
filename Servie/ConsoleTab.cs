@@ -23,7 +23,7 @@ namespace Servie
 
             m_Service.OutputDataReceived += OnOutputDataReceived;
             m_Service.ErrorDataReceived += OnOutputDataReceived;
-            m_Service.Started += OnStarted;
+            m_Service.Started += OnStartBegin;
             m_Service.Ended += OnEnded;
 
             Text = service.Name;
@@ -49,10 +49,19 @@ namespace Servie
             AddText(outLine.Data + "\n");
         }
 
-        private void OnStarted(object sender, EventArgs e)
+        private void OnStartBegin(object sender, EventArgs e)
         {
-            AddText("Starting service...\n");
             cmdStartStop.Text = "Stop";
+            AddText("Starting service...\n");
+        }
+
+        private void OnStartComplete(object sender, EventArgs e)
+        {
+            cmdStartStop.Enabled = true;
+            if (!m_Service.IsRunning)
+            {
+                cmdStartStop.Text = "Start";
+            }
         }
 
         private void OnEnded(object sender, EventArgs e)
@@ -65,17 +74,20 @@ namespace Servie
 
             AddText("\nService exited with " + m_Service.ExitCode + "\n");
             cmdStartStop.Text = "Start";
+            cmdStartStop.Enabled = true;
         }
 
         private void cmdStartStop_Click(object sender, EventArgs e)
         {
+            cmdStartStop.Enabled = false;
             if (m_Service.IsRunning)
             {
+                cmdStartStop.Text = "Start";
                 m_Service.Stop();
             }
             else
             {
-                m_Service.Start();
+                ServiceDetails.ServiceLoader.StartService(m_Service, OnStartComplete, Program.MainWindow.DisplayServiceLoadError);
             }
         }
 
