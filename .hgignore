@@ -4,3 +4,4 @@ glob:*.user
 glob:*.suo
 glob:logs/*
 glob:*.tmp
+glob:*.orig
