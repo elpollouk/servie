@@ -53,6 +53,9 @@
     Kills the process to end the service
     <kill/>
   -->
+  <!--
+    Shutdown time out after which the user will the prompted if they wat to continue waiting. If the user doesn't wait, then the process will be killed.
+  -->
     <timeout>10000</timeout>
   </stop>
 </xml>
