@@ -43,7 +43,7 @@ namespace Servie
 
         private void OnOutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs outLine)
         {
-            AddText(outLine.Data + "\n");
+            AddText(outLine.Data + "\r\n");
         }
 
         private void OnStartBegin(object sender, EventArgs e)

@@ -117,11 +117,16 @@ namespace Servie
         {
             timerScheduledInvoke.Enabled = false;
 
-            // Trigger the event and clear everything out
-            m_SIEvent(m_SISender, m_SIArgs);
+            EventHandler eventHandler = m_SIEvent;
+            sender = m_SISender;
+            e = m_SIArgs;
+            // Xlear everything out so a new event can be raised
             m_SIEvent = null;
             m_SISender = null;
             m_SIArgs = null;
+
+            // Trigger the event using the cached values
+            eventHandler(sender, e);
         }
         #endregion
     }

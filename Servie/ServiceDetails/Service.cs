@@ -126,6 +126,10 @@ namespace Servie.ServiceDetails
             m_Process = new Process();
             foreach (KeyValuePair<string, string> var in ServiceLoader.CommonEnvironment)
             {
+                if (m_Process.StartInfo.EnvironmentVariables.ContainsKey(var.Key))
+                {
+                    m_Process.StartInfo.EnvironmentVariables.Remove(var.Key);
+                }
                 m_Process.StartInfo.EnvironmentVariables.Add(var.Key, var.Value);
             }
 
@@ -151,6 +155,7 @@ namespace Servie.ServiceDetails
             m_Process.StartInfo.CreateNoWindow = true;
             m_Process.StartInfo.RedirectStandardOutput = true;
             m_Process.StartInfo.RedirectStandardError = true;
+            m_Process.StartInfo.RedirectStandardInput = true;
 
             m_Process.EnableRaisingEvents = true;
             m_Process.Exited += OnEnded;
@@ -303,6 +308,7 @@ namespace Servie.ServiceDetails
         {
             if (IsRunning)
             {
+                m_Process.StandardInput.Close();
                 m_StopCommand.Stop(m_Process, blocking);
             }
         }

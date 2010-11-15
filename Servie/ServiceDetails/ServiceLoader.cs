@@ -89,29 +89,36 @@ namespace Servie.ServiceDetails
             }
 
             // Get a list of all the services in the environment and try to load them
-            foreach (string dir in Directory.EnumerateDirectories("servers"))
+            try
             {
-                string serviceName = Path.GetFileName(dir);
-                try
+                foreach (string dir in Directory.EnumerateDirectories("servers"))
                 {
-                    // Skip directories starting with "."
-                    if (serviceName.StartsWith(".") == false)
+                    string serviceName = Path.GetFileName(dir);
+                    try
                     {
-                        ServiceDetails.Service service = new ServiceDetails.Service(serviceName);
-                        s_Services.Add(serviceName, service);
+                        // Skip directories starting with "."
+                        if (serviceName.StartsWith(".") == false)
+                        {
+                            ServiceDetails.Service service = new ServiceDetails.Service(serviceName);
+                            s_Services.Add(serviceName, service);
+                        }
+                    }
+                    catch (ServiceDetails.IgnoreServiceException)
+                    {
+                        // This service has been flagged as to be ignored
+                    }
+                    catch (ServiceDetails.ParserError x)
+                    {
+                        if (onError != null)
+                        {
+                            onError(serviceName, x.Message);
+                        }
                     }
                 }
-                catch (ServiceDetails.IgnoreServiceException)
-                {
-                    // This service has been flagged as to be ignored
-                }
-                catch (ServiceDetails.ParserError x)
-                {
-                    if (onError != null)
-                    {
-                        onError(serviceName, x.Message);
-                    }
-                }
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                System.Windows.Forms.MessageBox.Show("Server directory not found.", "Servie", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }
         }
 
@@ -123,15 +130,25 @@ namespace Servie.ServiceDetails
             _OnAutoStartComplete = onAutoStartComplete;
             _DisplayError = displayError;
 
+            // Very slack approach to making sure the services are on the stack in the right order, but at least I know
+            // it will work.
             s_AutoStartStack = new Stack<Service>();
+            Stack<Service> reverseStack = new Stack<Service>();
 
             // Push all the non-running autostart services onto the stack
             foreach (Service service in s_Services.Values)
             {
                 if (service.Autostart && !service.IsRunning)
                 {
-                    s_AutoStartStack.Push(service);
+                    reverseStack.Push(service);
                 }
+            }
+
+            // Now to actually do the reversing
+            while (reverseStack.Count != 0)
+            {
+                Service item = reverseStack.Pop();
+                s_AutoStartStack.Push(item);
             }
 
             StartFirstServiceOnStack();
