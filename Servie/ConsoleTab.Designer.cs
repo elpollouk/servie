@@ -83,12 +83,11 @@
             this.Controls.Add(this.txtConsole);
             this.Controls.Add(this.cmdClear);
             this.Controls.Add(this.cmdStartStop);
-            this.Location = new System.Drawing.Point(4, 22);
-            this.Name = "tabConsole";
+            this.DoubleBuffered = true;
+            this.Margin = new System.Windows.Forms.Padding(0);
+            this.Name = "ConsoleTab";
             this.Padding = new System.Windows.Forms.Padding(3);
             this.Size = new System.Drawing.Size(987, 532);
-            this.Text = "Console";
-            this.UseVisualStyleBackColor = true;
             this.ResumeLayout(false);
             this.PerformLayout();
 

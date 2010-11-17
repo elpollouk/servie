@@ -116,7 +116,7 @@ namespace Servie.ServiceDetails
                     }
                 }
             }
-            catch (DirectoryNotFoundException e)
+            catch (DirectoryNotFoundException)
             {
                 System.Windows.Forms.MessageBox.Show("Server directory not found.", "Servie", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
             }

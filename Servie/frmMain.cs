@@ -27,7 +27,8 @@ namespace Servie
             ServiceLoader.LoadServices(DisplayServiceLoadError);
             foreach (Service service in ServiceLoader.Services)
             {
-                ConsoleTab tab = new ConsoleTab(service);
+                ConsoleTab control = new ConsoleTab(service);
+                UserControlTab tab = new UserControlTab(control);
                 tabControl1.Controls.Add(tab);
             }
 

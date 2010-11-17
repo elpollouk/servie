@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace Servie
 {
-    public partial class ConsoleTab : TabPage
+    public partial class ConsoleTab : UserControl
     {
         private ServiceDetails.Service m_Service;
 
