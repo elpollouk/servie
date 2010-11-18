@@ -27,6 +27,11 @@ namespace Servie.ServiceDetails
             get { return s_Services.Values; }
         }
 
+        public static int NumServices
+        {
+            get { return s_Services.Count; }
+        }
+
         // Returns an immutable dictionary of services
         public static IDictionary<string, Service> ServiceDictionary
         {
@@ -89,36 +94,29 @@ namespace Servie.ServiceDetails
             }
 
             // Get a list of all the services in the environment and try to load them
-            try
+            foreach (string dir in Directory.EnumerateDirectories("servers"))
             {
-                foreach (string dir in Directory.EnumerateDirectories("servers"))
+                string serviceName = Path.GetFileName(dir);
+                try
                 {
-                    string serviceName = Path.GetFileName(dir);
-                    try
+                    // Skip directories starting with "."
+                    if (serviceName.StartsWith(".") == false)
                     {
-                        // Skip directories starting with "."
-                        if (serviceName.StartsWith(".") == false)
-                        {
-                            ServiceDetails.Service service = new ServiceDetails.Service(serviceName);
-                            s_Services.Add(serviceName, service);
-                        }
-                    }
-                    catch (ServiceDetails.IgnoreServiceException)
-                    {
-                        // This service has been flagged as to be ignored
-                    }
-                    catch (ServiceDetails.ParserError x)
-                    {
-                        if (onError != null)
-                        {
-                            onError(serviceName, x.Message);
-                        }
+                        ServiceDetails.Service service = new ServiceDetails.Service(serviceName);
+                        s_Services.Add(serviceName, service);
                     }
                 }
-            }
-            catch (DirectoryNotFoundException)
-            {
-                System.Windows.Forms.MessageBox.Show("Server directory not found.", "Servie", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                catch (ServiceDetails.IgnoreServiceException)
+                {
+                    // This service has been flagged as to be ignored
+                }
+                catch (ServiceDetails.ParserError x)
+                {
+                    if (onError != null)
+                    {
+                        onError(serviceName, x.Message);
+                    }
+                }
             }
         }
 

@@ -10,6 +10,7 @@ namespace Servie
     {
         private const int kExitTimeoutTime = 30000;
         private int m_ExitTimeout;
+        private bool m_HideOnClose = false;
 
         public frmMain()
         {
@@ -24,7 +25,23 @@ namespace Servie
 
             m_ExitTimeout = kExitTimeoutTime / timerClosing.Interval;
 
-            ServiceLoader.LoadServices(DisplayServiceLoadError);
+            try
+            {
+                ServiceLoader.LoadServices(DisplayServiceLoadError);
+                if (ServiceLoader.NumServices == 0)
+                {
+                    MessageBox.Show("No servers found in servers directory.", "Servie", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    Close();
+                    return;
+                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                MessageBox.Show("Server directory not found.", "Servie", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                Close();
+                return;
+            }
+
             foreach (Service service in ServiceLoader.Services)
             {
                 ConsoleTab console = new ConsoleTab(service);
@@ -33,9 +50,20 @@ namespace Servie
             }
 
             ServiceLoader.AutoStartServices(OnAutoStartComplete, DisplayServiceLoadError);
+
+            m_HideOnClose = true;
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (m_HideOnClose == true)
+            {
+                e.Cancel = true;
+                Hide();
+            }
+        }
+
+        void Exit()
         {
             if (!ServiceLoader.AreAllServicesStopped())
             {
@@ -44,7 +72,11 @@ namespace Servie
                     ServiceLoader.StopAllServices();
                     timerClosing.Enabled = true;
                 }
-                e.Cancel = true;
+            }
+            else
+            {
+                m_HideOnClose = false;
+                Close();
             }
         }
 
@@ -54,6 +86,7 @@ namespace Servie
             if (ServiceLoader.AreAllServicesStopped())
             {
                 timerClosing.Enabled = false;
+                m_HideOnClose = false;
                 this.Close();
             }
             else if (m_ExitTimeout == 0)
@@ -130,5 +163,38 @@ namespace Servie
             eventHandler(sender, e);
         }
         #endregion
+
+        //---------------------------------------------------------------------------------------//
+        // Context Menu
+        //---------------------------------------------------------------------------------------//
+        private void trayIcon_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                Show();
+                BringToFront();
+            }
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Exit();
+        }
+
+        private void startAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!ServiceLoader.AreAllAutoStartServicesRunning())
+            {
+                ServiceLoader.AutoStartServices(OnAutoStartComplete, DisplayServiceLoadError);
+            }
+        }
+
+        private void stopAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!ServiceLoader.AreAllServicesStopped())
+            {
+                ServiceLoader.StopAllServices();
+            }
+        }
     }
 }
