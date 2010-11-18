@@ -12,9 +12,13 @@ namespace Servie
         private int m_ExitTimeout;
         private bool m_HideOnClose = false;
 
+        private frmAbout m_About;
+
         public frmMain()
         {
             InitializeComponent();
+
+            m_About = new frmAbout();
 
             DoubleBuffered = true;
         }
@@ -45,6 +49,10 @@ namespace Servie
             {
                 e.Cancel = true;
                 Hide();
+            }
+            else
+            {
+                m_About.Dispose();
             }
         }
 
@@ -206,6 +214,11 @@ namespace Servie
             {
                 ServiceLoader.StopAllServices();
             }
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            m_About.Show();
         }
     }
 }
