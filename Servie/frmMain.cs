@@ -25,31 +25,16 @@ namespace Servie
 
             m_ExitTimeout = kExitTimeoutTime / timerClosing.Interval;
 
-            try
-            {
-                ServiceLoader.LoadServices(DisplayServiceLoadError);
-                if (ServiceLoader.NumServices == 0)
-                {
-                    MessageBox.Show("No servers found in servers directory.", "Servie", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    Close();
-                    return;
-                }
-            }
-            catch (DirectoryNotFoundException)
-            {
-                MessageBox.Show("Server directory not found.", "Servie", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                Close();
-                return;
-            }
-
+            // Create a tab for each service
             foreach (Service service in ServiceLoader.Services)
             {
                 ConsoleTab console = new ConsoleTab(service);
                 //UserControlTab tab = new UserControlTab(console);
                 tabControl1.Controls.Add(console);
             }
-
-            ServiceLoader.AutoStartServices(OnAutoStartComplete, DisplayServiceLoadError);
+           
+            // Auto start the services
+            ServiceLoader.AutoStartServices(OnAutoStartComplete, DisplayServiceError);
 
             m_HideOnClose = true;
         }
@@ -110,21 +95,48 @@ namespace Servie
             }
         }
 
-        private void OnAutoStartComplete(object sender, EventArgs e)
+        protected override void WndProc(ref Message m)
         {
-            if (ServiceLoader.AreAllAutoStartServicesRunning())
+            switch (m.Msg)
             {
-                //MessageBox.Show("All services started.");
-            }
-            else
-            {
-               //MessageBox.Show("Error starting services.", "Servie");
+                case Program.WM_USER:
+                    // A new instance is trying to activate us
+                    ReDisplayWindow();
+                    break;
+
+                default:
+                    base.WndProc(ref m);
+                    break;
             }
         }
 
-        public void DisplayServiceLoadError(string service, string message)
+        private void OnAutoStartComplete(object sender, EventArgs e)
+        {
+            trayIcon.BalloonTipTitle = "Servie";
+            if (ServiceLoader.AreAllAutoStartServicesRunning())
+            {
+                trayIcon.BalloonTipText = "All services started successfully.";
+            }
+            else
+            {
+                trayIcon.BalloonTipText = "Failed to start some services.";
+            }
+            trayIcon.ShowBalloonTip(10000);
+        }
+
+        public void DisplayServiceError(string service, string message)
         {
             MessageBox.Show(message, service, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private void ReDisplayWindow()
+        {
+            Show();
+            if (WindowState == FormWindowState.Minimized)
+            {
+                WindowState = FormWindowState.Normal;
+            }
+            Activate();
         }
 
         #region Scheduled invoke code
@@ -171,8 +183,7 @@ namespace Servie
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                Show();
-                BringToFront();
+                ReDisplayWindow();
             }
         }
 
@@ -185,7 +196,7 @@ namespace Servie
         {
             if (!ServiceLoader.AreAllAutoStartServicesRunning())
             {
-                ServiceLoader.AutoStartServices(OnAutoStartComplete, DisplayServiceLoadError);
+                ServiceLoader.AutoStartServices(OnAutoStartComplete, DisplayServiceError);
             }
         }
 

@@ -93,30 +93,37 @@ namespace Servie.ServiceDetails
                 s_ImmutableEnv = new ImmutableDictionary<string, string>(s_Environment);
             }
 
-            // Get a list of all the services in the environment and try to load them
-            foreach (string dir in Directory.EnumerateDirectories("servers"))
+            try
             {
-                string serviceName = Path.GetFileName(dir);
-                try
+                // Get a list of all the services in the environment and try to load them
+                foreach (string dir in Directory.EnumerateDirectories("servers"))
                 {
-                    // Skip directories starting with "."
-                    if (serviceName.StartsWith(".") == false)
+                    string serviceName = Path.GetFileName(dir);
+                    try
                     {
-                        ServiceDetails.Service service = new ServiceDetails.Service(serviceName);
-                        s_Services.Add(serviceName, service);
+                        // Skip directories starting with "."
+                        if (serviceName.StartsWith(".") == false)
+                        {
+                            ServiceDetails.Service service = new ServiceDetails.Service(serviceName);
+                            s_Services.Add(serviceName, service);
+                        }
+                    }
+                    catch (ServiceDetails.IgnoreServiceException)
+                    {
+                        // This service has been flagged as to be ignored
+                    }
+                    catch (ServiceDetails.ParserError x)
+                    {
+                        if (onError != null)
+                        {
+                            onError(serviceName, x.Message);
+                        }
                     }
                 }
-                catch (ServiceDetails.IgnoreServiceException)
-                {
-                    // This service has been flagged as to be ignored
-                }
-                catch (ServiceDetails.ParserError x)
-                {
-                    if (onError != null)
-                    {
-                        onError(serviceName, x.Message);
-                    }
-                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                onError("Servie", "Servers directory not found.");
             }
         }
 
