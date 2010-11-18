@@ -1,0 +1,18 @@
+<xml>
+  <name>Dummie</name>
+  <autostart>true</autostart>
+
+  <start>
+    <exec>
+      <executable>dummie.exe</executable>
+      <!--args>start</args-->
+    </exec>
+
+    <wait>3000</wait>
+  </start>
+  
+  <stop>
+    <signal>CTRL_C</signal>
+    <timeout>10000</timeout>
+  </stop>
+</xml>

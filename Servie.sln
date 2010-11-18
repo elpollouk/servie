@@ -4,9 +4,12 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Servie", "Servie\Servie.csproj", "{421C4586-5D3C-482D-95F4-532D454BF5CE}"
 	ProjectSection(ProjectDependencies) = postProject
 		{86636139-7904-446D-B2CB-6D8ABD17B23A} = {86636139-7904-446D-B2CB-6D8ABD17B23A}
+		{F78791E1-2ABD-4A40-B0B3-A3E4F3D7D616} = {F78791E1-2ABD-4A40-B0B3-A3E4F3D7D616}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stoppie", "Stoppie\Stoppie.csproj", "{86636139-7904-446D-B2CB-6D8ABD17B23A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dummie", "Dummie\Dummie.csproj", "{F78791E1-2ABD-4A40-B0B3-A3E4F3D7D616}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,6 +25,10 @@ Global
 		{86636139-7904-446D-B2CB-6D8ABD17B23A}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{86636139-7904-446D-B2CB-6D8ABD17B23A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86636139-7904-446D-B2CB-6D8ABD17B23A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F78791E1-2ABD-4A40-B0B3-A3E4F3D7D616}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{F78791E1-2ABD-4A40-B0B3-A3E4F3D7D616}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{F78791E1-2ABD-4A40-B0B3-A3E4F3D7D616}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F78791E1-2ABD-4A40-B0B3-A3E4F3D7D616}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

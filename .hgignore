@@ -5,3 +5,5 @@ glob:*.suo
 glob:logs/*
 glob:*.tmp
 glob:*.orig
+glob:Dummie.exe
+glob:*.ser
