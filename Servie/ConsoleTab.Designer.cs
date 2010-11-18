@@ -75,7 +75,6 @@
             // 
             // timerStopping
             // 
-            this.timerStopping.Enabled = false;
             this.timerStopping.Tick += new System.EventHandler(this.timerStopping_Tick);
             // 
             // ConsoleTab
@@ -84,9 +83,7 @@
             this.Controls.Add(this.cmdClear);
             this.Controls.Add(this.cmdStartStop);
             this.DoubleBuffered = true;
-            this.Margin = new System.Windows.Forms.Padding(0);
             this.Name = "ConsoleTab";
-            this.Padding = new System.Windows.Forms.Padding(3);
             this.Size = new System.Drawing.Size(987, 532);
             this.ResumeLayout(false);
             this.PerformLayout();

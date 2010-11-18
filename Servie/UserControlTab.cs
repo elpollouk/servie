@@ -25,6 +25,7 @@ namespace Servie
 
         public UserControlTab(UserControl control)
         {
+            this.UseVisualStyleBackColor = true;
             this.UserControl = control;
         }
     }

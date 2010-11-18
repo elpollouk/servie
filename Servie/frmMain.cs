@@ -27,9 +27,9 @@ namespace Servie
             ServiceLoader.LoadServices(DisplayServiceLoadError);
             foreach (Service service in ServiceLoader.Services)
             {
-                ConsoleTab control = new ConsoleTab(service);
-                UserControlTab tab = new UserControlTab(control);
-                tabControl1.Controls.Add(tab);
+                ConsoleTab console = new ConsoleTab(service);
+                //UserControlTab tab = new UserControlTab(console);
+                tabControl1.Controls.Add(console);
             }
 
             ServiceLoader.AutoStartServices(OnAutoStartComplete, DisplayServiceLoadError);

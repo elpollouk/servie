@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace Servie
 {
-    public partial class ConsoleTab : UserControl
+    public partial class ConsoleTab : TabPage
     {
         private ServiceDetails.Service m_Service;
 
@@ -24,8 +24,9 @@ namespace Servie
             m_Service.Ended += OnEnded;
 
             Text = service.Name;
+            UseVisualStyleBackColor = true;
+
             cmdStartStop.Text = "Start";
-            DoubleBuffered = true;
         }
 
         private void AddText(string text)
