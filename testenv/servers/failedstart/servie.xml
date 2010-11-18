@@ -1,13 +1,16 @@
 <xml>
-  <name>Dummie</name>
+  <ignore>true</ignore>
+  
+  <name>Dummie (Failed Start)</name>
   <autostart>true</autostart>
 
   <start>
     <exec>
       <executable>..\dummie\dummie.exe</executable>
+      <args>"{0} Failing!!" 2</args>
     </exec>
 
-    <wait>1000</wait>
+    <wait>3000</wait>
   </start>
   
   <stop>

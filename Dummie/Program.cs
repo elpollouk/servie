@@ -11,9 +11,9 @@ namespace Dummie
         {
             // Message to display
             string message;
-            if (args.Length >= 2)
+            if (args.Length >= 1)
             {
-                message = args[1];
+                message = args[0];
             }
             else
             {
@@ -22,9 +22,9 @@ namespace Dummie
 
             // Maximum number of test message to show before exiting
             int maxCount;
-            if (args.Length >= 3)
+            if (args.Length >= 2)
             {
-                maxCount = int.Parse(args[2]);
+                maxCount = int.Parse(args[1]);
             }
             else
             {
