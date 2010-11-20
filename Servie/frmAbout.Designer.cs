@@ -28,12 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmAbout));
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.cmdOk = new System.Windows.Forms.Button();
             this.lblServie = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.lblNumRunning = new System.Windows.Forms.Label();
+            this.timerUpdate = new System.Windows.Forms.Timer(this.components);
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -79,17 +84,53 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(197, 50);
+            this.label2.Location = new System.Drawing.Point(196, 46);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(170, 13);
             this.label2.TabIndex = 4;
             this.label2.Text = "Icon contributed by David Hamblin";
+            // 
+            // lblNumRunning
+            // 
+            this.lblNumRunning.AutoSize = true;
+            this.lblNumRunning.Location = new System.Drawing.Point(196, 91);
+            this.lblNumRunning.Name = "lblNumRunning";
+            this.lblNumRunning.Size = new System.Drawing.Size(79, 13);
+            this.lblNumRunning.TabIndex = 5;
+            this.lblNumRunning.Text = "lblNumRunning";
+            // 
+            // timerUpdate
+            // 
+            this.timerUpdate.Interval = 2000;
+            this.timerUpdate.Tick += new System.EventHandler(this.timerUpdate_Tick);
+            // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(196, 59);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(142, 13);
+            this.linkLabel1.TabIndex = 7;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "Apache License, version 2.0";
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Location = new System.Drawing.Point(199, 75);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(241, 10);
+            this.groupBox1.TabIndex = 8;
+            this.groupBox1.TabStop = false;
             // 
             // frmAbout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(452, 213);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.linkLabel1);
+            this.Controls.Add(this.lblNumRunning);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lblServie);
@@ -104,7 +145,7 @@
             this.Text = "About Servie";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmAbout_FormClosing);
             this.Load += new System.EventHandler(this.frmAbout_Load);
-            this.Shown += new System.EventHandler(this.frmAbout_Shown);
+            this.VisibleChanged += new System.EventHandler(this.frmAbout_VisibleChanged);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -118,5 +159,9 @@
         private System.Windows.Forms.Label lblServie;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label lblNumRunning;
+        private System.Windows.Forms.Timer timerUpdate;
+        private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }

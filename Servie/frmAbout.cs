@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
+using Servie.ServiceDetails;
 
 namespace Servie
 {
@@ -18,6 +13,7 @@ namespace Servie
 
         private void frmAbout_Load(object sender, EventArgs e)
         {
+            // Get the actual assembly version rather than hard code this in.
             lblServie.Text = "Servie " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         }
@@ -29,13 +25,38 @@ namespace Servie
 
         private void frmAbout_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Closing the window doesn't actually destroy it
             e.Cancel = true;
             Hide();
         }
 
-        private void frmAbout_Shown(object sender, EventArgs e)
+        private void frmAbout_VisibleChanged(object sender, EventArgs e)
         {
-            StartPosition = FormStartPosition.CenterScreen;
+            if (Visible)
+            {
+                // If we've become visible, start the update timer for the number of running services
+                UpdateNumRunning();
+                timerUpdate.Enabled = true;
+            }
+            else
+            {
+                timerUpdate.Enabled = false;
+            }
+        }
+
+        private void timerUpdate_Tick(object sender, EventArgs e)
+        {
+            UpdateNumRunning();
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://www.apache.org/licenses/LICENSE-2.0.html");
+        }
+
+        private void UpdateNumRunning()
+        {
+            lblNumRunning.Text = ServiceLoader.NumRunningServices + "/" + ServiceLoader.NumLoadedServices + " servers running.";
         }
     }
 }
