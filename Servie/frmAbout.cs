@@ -6,6 +6,8 @@ namespace Servie
 {
     public partial class frmAbout : Form
     {
+        private const string kHomePageUrl = "http://code.google.com/p/servie/";
+        private const string kLicenseUrl = "http://www.apache.org/licenses/LICENSE-2.0.html";
         public frmAbout()
         {
             InitializeComponent();
@@ -48,14 +50,19 @@ namespace Servie
             UpdateNumRunning();
         }
 
-        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            System.Diagnostics.Process.Start("http://www.apache.org/licenses/LICENSE-2.0.html");
-        }
-
         private void UpdateNumRunning()
         {
             lblNumRunning.Text = ServiceLoader.NumRunningServices + "/" + ServiceLoader.NumLoadedServices + " servers running.";
+        }
+
+        private void lnkLicense_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(kLicenseUrl);
+        }
+
+        private void lnkWebsite_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(kHomePageUrl);
         }
     }
 }

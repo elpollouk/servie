@@ -1,7 +1,0 @@
-<xml>
-  <start>
-    <exec>
-      <args>jpda start</args>
-    </exec>
-  </start>
-</xml>

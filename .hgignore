@@ -8,3 +8,4 @@ glob:*.orig
 glob:Dummie.exe
 glob:*.ser
 glob:conf/Catalina/**
+glob:testenv/packages/servie/localconf/*

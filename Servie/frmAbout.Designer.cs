@@ -37,8 +37,9 @@
             this.label2 = new System.Windows.Forms.Label();
             this.lblNumRunning = new System.Windows.Forms.Label();
             this.timerUpdate = new System.Windows.Forms.Timer(this.components);
-            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.lnkLicense = new System.Windows.Forms.LinkLabel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.lnkWebsite = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -93,7 +94,7 @@
             // lblNumRunning
             // 
             this.lblNumRunning.AutoSize = true;
-            this.lblNumRunning.Location = new System.Drawing.Point(196, 91);
+            this.lblNumRunning.Location = new System.Drawing.Point(196, 104);
             this.lblNumRunning.Name = "lblNumRunning";
             this.lblNumRunning.Size = new System.Drawing.Size(79, 13);
             this.lblNumRunning.TabIndex = 5;
@@ -104,32 +105,45 @@
             this.timerUpdate.Interval = 2000;
             this.timerUpdate.Tick += new System.EventHandler(this.timerUpdate_Tick);
             // 
-            // linkLabel1
+            // lnkLicense
             // 
-            this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(196, 59);
-            this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(142, 13);
-            this.linkLabel1.TabIndex = 7;
-            this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "Apache License, version 2.0";
-            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            this.lnkLicense.AutoSize = true;
+            this.lnkLicense.Location = new System.Drawing.Point(196, 72);
+            this.lnkLicense.Name = "lnkLicense";
+            this.lnkLicense.Size = new System.Drawing.Size(142, 13);
+            this.lnkLicense.TabIndex = 7;
+            this.lnkLicense.TabStop = true;
+            this.lnkLicense.Text = "Apache License, version 2.0";
+            this.lnkLicense.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkLicense_LinkClicked);
             // 
             // groupBox1
             // 
-            this.groupBox1.Location = new System.Drawing.Point(199, 75);
+            this.groupBox1.Location = new System.Drawing.Point(199, 88);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(241, 10);
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             // 
+            // lnkWebsite
+            // 
+            this.lnkWebsite.AutoSize = true;
+            this.lnkWebsite.Location = new System.Drawing.Point(196, 59);
+            this.lnkWebsite.Name = "lnkWebsite";
+            this.lnkWebsite.Size = new System.Drawing.Size(82, 13);
+            this.lnkWebsite.TabIndex = 9;
+            this.lnkWebsite.TabStop = true;
+            this.lnkWebsite.Text = "Project Website";
+            this.lnkWebsite.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkWebsite_LinkClicked);
+            // 
             // frmAbout
             // 
+            this.AcceptButton = this.cmdOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(452, 213);
+            this.Controls.Add(this.lnkWebsite);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.linkLabel1);
+            this.Controls.Add(this.lnkLicense);
             this.Controls.Add(this.lblNumRunning);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -161,7 +175,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lblNumRunning;
         private System.Windows.Forms.Timer timerUpdate;
-        private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.LinkLabel lnkLicense;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.LinkLabel lnkWebsite;
     }
 }
