@@ -1,4 +1,8 @@
-﻿using System;
+﻿/*
+ * Controls loading of all the services in the environment.
+ * Also controls starting services as it can resolve dependancies (when implemented).
+ */
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
@@ -17,7 +21,6 @@ namespace Servie.ServiceDetails
         private static ImmutableDictionary<string, string> s_ImmutableEnv = null;
         private static Dictionary<string, string> s_Environment = null;
 
-        private static EventHandler _OnAutoStartComplete = null;
         private static ErrorMessageHandler _DisplayError = null;
         private static Stack<Service> s_AutoStartStack = null;
 
@@ -109,6 +112,36 @@ namespace Servie.ServiceDetails
         }
         #endregion
 
+        #region Bulk service start/stop events
+        // Triggered when a bulk service start request is issued
+        private static EventHandler _StartRequested;
+        public static event EventHandler StartRequested
+        {
+            add
+            {
+                _StartRequested += value;
+            }
+            remove
+            {
+                _StartRequested -= value;
+            }
+        }
+
+        // Triggered when a bulk service start request has completed
+        private static EventHandler _Started;
+        public static event EventHandler Started
+        {
+            add
+            {
+                _Started += value;
+            }
+            remove
+            {
+                _Started -= value;
+            }
+        }
+        #endregion
+
         // Loads the common environment variables
         public static void LoadCommonEnvironment()
         {
@@ -166,11 +199,11 @@ namespace Servie.ServiceDetails
                     string serviceName = Path.GetFileName(dir);
                     try
                     {
-                        // Skip directories starting with "."
-                        if (serviceName.StartsWith(".") == false)
+                        // Skip directories starting with "." or "!" (because windows explorer won't allow you to create a directory starting with '.')
+                        if ((serviceName.StartsWith(".") == false) && (serviceName.StartsWith("!") == false))
                         {
                             ServiceDetails.Service service = new ServiceDetails.Service(serviceName);
-                            s_Services.Add(serviceName, service);
+                            s_Services.Add(service.Name, service);
                         }
                     }
                     catch (ServiceDetails.IgnoreServiceException)
@@ -194,10 +227,9 @@ namespace Servie.ServiceDetails
 
         #region Bulk service control
         // Autostarts services
-        public static void AutoStartServices(EventHandler onAutoStartComplete, ErrorMessageHandler displayError)
+        public static void AutoStartServices(ErrorMessageHandler displayError)
         {
             if (s_AutoStartStack != null) throw new Exception("Services are already being started.");
-            _OnAutoStartComplete = onAutoStartComplete;
             _DisplayError = displayError;
 
             // Very slack approach to making sure the services are on the stack in the right order, but at least I know
@@ -214,21 +246,21 @@ namespace Servie.ServiceDetails
                 }
             }
 
-            // Now to actually do the reversing
+            // Now to reverse the order of the stack
             while (reverseStack.Count != 0)
             {
                 Service item = reverseStack.Pop();
                 s_AutoStartStack.Push(item);
             }
 
+            if (_StartRequested != null) _StartRequested(null, null);
             StartFirstServiceOnStack();
         }
 
         // Start a single service
-        public static void StartService(Service service, EventHandler onStartComplete, ErrorMessageHandler displayError)
+        public static void StartService(Service service, ErrorMessageHandler displayError)
         {
             if (s_AutoStartStack != null) throw new Exception("Services are already being started.");
-            _OnAutoStartComplete = onStartComplete;
             _DisplayError = displayError;
 
             s_AutoStartStack = new Stack<Service>();
@@ -239,6 +271,7 @@ namespace Servie.ServiceDetails
                 s_AutoStartStack.Push(service);
             }
 
+            if (_StartRequested != null) _StartRequested(null, null);
             StartFirstServiceOnStack();
         }
 
@@ -251,52 +284,53 @@ namespace Servie.ServiceDetails
             }
         }
 
-        private static void StartNextService(object sender, EventArgs e)
-        {
-            // Pop the current service off the top of the stack and check if it managed to start
-            Service service = s_AutoStartStack.Pop();
-            if (!service.IsRunning)
-            {
-                if (_DisplayError != null) _DisplayError(service.Name, "Service failed to start.");
-            }
-            StartFirstServiceOnStack();
-        }
-
         //Starts the first service on the stack
         private static void StartFirstServiceOnStack()
         {
-            Service firstService;
-            // Make sure there are services on the stack
-            while (s_AutoStartStack.Count > 0)
-            {
-                firstService = s_AutoStartStack.Peek();
-                firstService.Start();
-                if (firstService.StartWaitTime != 0)
-                {
-                    // Schedule the start next service function to be called after the wait period
-                    Program.MainWindow.ScheduledInvoke(StartNextService, s_AutoStartStack, null, firstService.StartWaitTime);
-                    break;
-                }
-                else
-                {
-                    // No delay after calling start, so pop it from the stack
-                    s_AutoStartStack.Pop();
-                }
-            }
-
             // If there are no more services on the start, report the starting as complete
             if (s_AutoStartStack.Count == 0)
             {
                 OnAutoStartComplete();
             }
+            else
+            {
+                Service firstService = s_AutoStartStack.Peek();
+                firstService.Started += OnServiceStarted;
+                firstService.Stopped += OnServiceStopped;
+                firstService.Start();
+            }
+        }
+
+        private static void OnServiceStarted(object sender, EventArgs e)
+        {
+            // Service started successfully
+            Service service = s_AutoStartStack.Pop();
+            if (service != sender) throw new Exception("Callback from unknown service.");
+            // Unregister our event handlers
+            service.Started -= OnServiceStarted;
+            service.Stopped -= OnServiceStopped;
+
+            StartFirstServiceOnStack();
+        }
+
+        private static void OnServiceStopped(object sender, EventArgs e)
+        {
+            // Service failed to start
+            Service service = s_AutoStartStack.Pop();
+            if (service != sender) throw new Exception("Callback from unknown service.");
+            if (_DisplayError != null) _DisplayError(service.Name, "Service failed to start.");
+            // Unregister our event handlers
+            service.Started -= OnServiceStarted;
+            service.Stopped -= OnServiceStopped;
+
+            StartFirstServiceOnStack();
         }
 
         private static void OnAutoStartComplete()
         {
-            if (_OnAutoStartComplete != null) _OnAutoStartComplete(null, null);
+            if (_Started != null) _Started(null, null);
 
             // Clear everything out
-            _OnAutoStartComplete = null;
             _DisplayError = null;
             s_AutoStartStack = null;
         }

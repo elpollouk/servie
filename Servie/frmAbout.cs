@@ -15,7 +15,6 @@ namespace Servie
         {
             // Get the actual assembly version rather than hard code this in.
             lblServie.Text = "Servie " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
         }
 
         private void cmdOk_Click(object sender, EventArgs e)

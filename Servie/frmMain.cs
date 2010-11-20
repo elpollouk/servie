@@ -8,9 +8,11 @@ namespace Servie
 {
     public partial class frmMain : Form
     {
-        private const int kExitTimeoutTime = 30000;
-        private int m_ExitTimeout;
+        private const int kExitTimeoutTime = 30000; // Time to wait for services to finish when exiting
+
+        private int m_ExitTimeoutCounter;
         private bool m_HideOnClose = false;
+        private bool m_FirstAutoStart = true;
 
         private frmAbout m_About;
 
@@ -19,26 +21,25 @@ namespace Servie
             InitializeComponent();
 
             m_About = new frmAbout();
-
-            DoubleBuffered = true;
         }
 
         private void Main_Load(object sender, EventArgs e)
         {
             tabControl1.Controls.Clear();
 
-            m_ExitTimeout = kExitTimeoutTime / timerClosing.Interval;
+            // Initialise the time out counter based on the form's timer interval
+            m_ExitTimeoutCounter = kExitTimeoutTime / timerClosing.Interval;
 
             // Create a tab for each service
             foreach (Service service in ServiceLoader.Services)
             {
                 ConsoleTab console = new ConsoleTab(service);
-                //UserControlTab tab = new UserControlTab(console);
                 tabControl1.Controls.Add(console);
             }
            
             // Auto start the services
-            ServiceLoader.AutoStartServices(OnAutoStartComplete, DisplayServiceError);
+            ServiceLoader.Started += OnAutoStartComplete;
+            ServiceLoader.AutoStartServices(DisplayServiceError);
 
             m_HideOnClose = true;
         }
@@ -47,19 +48,23 @@ namespace Servie
         {
             if (m_HideOnClose == true)
             {
+                // We're not exiting, so we only want to hide this window
                 e.Cancel = true;
                 Hide();
             }
             else
             {
+                // We are exiting, so brute force close the about window (this is because it also hides on close)
                 m_About.Dispose();
             }
         }
 
-        void Exit()
+        // Starts the exit procedure
+        private void Exit()
         {
             if (!ServiceLoader.AreAllServicesStopped)
             {
+                // We need to request that all services are stopped before we can exit
                 if (timerClosing.Enabled == false)
                 {
                     ServiceLoader.StopAllServices();
@@ -68,6 +73,7 @@ namespace Servie
             }
             else
             {
+                // No services are running so we can just close this window
                 m_HideOnClose = false;
                 Close();
             }
@@ -75,23 +81,25 @@ namespace Servie
 
         private void timerClosing_Tick(object sender, EventArgs e)
         {
-            m_ExitTimeout--;
+            m_ExitTimeoutCounter--;
             if (ServiceLoader.AreAllServicesStopped)
             {
+                // Everything has been stopped, so we can close the form now
                 timerClosing.Enabled = false;
                 m_HideOnClose = false;
                 this.Close();
             }
-            else if (m_ExitTimeout == 0)
+            else if (m_ExitTimeoutCounter == 0)
             {
                 // Timed out while exiting
                 DialogResult result = MessageBox.Show("Shutdown is taking a long time, do you want to continue waiting?", "Servie", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (result == System.Windows.Forms.DialogResult.Yes)
                 {
-                    m_ExitTimeout = kExitTimeoutTime / timerClosing.Interval;
+                    m_ExitTimeoutCounter = kExitTimeoutTime / timerClosing.Interval;
                 }
                 else
                 {
+                    // Force kill all the services
                     foreach (Service service in ServiceLoader.Services)
                     {
                         if (service.IsRunning)
@@ -120,6 +128,10 @@ namespace Servie
 
         private void OnAutoStartComplete(object sender, EventArgs e)
         {
+            // We only want to display the notification if we don't have focus or on the first time we're started
+            if (!m_FirstAutoStart && (ActiveForm == this)) return;
+            m_FirstAutoStart = false;
+
             trayIcon.BalloonTipTitle = "Servie";
             trayIcon.BalloonTipIcon = ToolTipIcon.Info;
             if (ServiceLoader.AreAllAutoStartServicesRunning)
@@ -140,6 +152,7 @@ namespace Servie
 
         private void ReDisplayWindow()
         {
+            // Show the window, and bring it to the front
             Show();
             if (WindowState == FormWindowState.Minimized)
             {
@@ -147,43 +160,6 @@ namespace Servie
             }
             Activate();
         }
-
-        #region Scheduled invoke code
-        // This is a special interface to allow the scheduling of an event to be invoked at a later point
-        // Only one event can be schedule at a time though.
-        private EventHandler m_SIEvent = null;
-        private object m_SISender = null;
-        private EventArgs m_SIArgs = null;
-
-        public void ScheduledInvoke(EventHandler evnt, object sender, EventArgs args, int delay)
-        {
-            if (m_SIEvent != null) throw new Exception("An event is already scheduled.");
-            if (evnt == null) throw new ArgumentNullException();
-
-            m_SIEvent = evnt;
-            m_SISender = sender;
-            m_SIArgs = args;
-
-            timerScheduledInvoke.Interval = delay;
-            timerScheduledInvoke.Enabled = true;
-        }
-
-        private void timerScheduledInvoke_Tick(object sender, EventArgs e)
-        {
-            timerScheduledInvoke.Enabled = false;
-
-            EventHandler eventHandler = m_SIEvent;
-            sender = m_SISender;
-            e = m_SIArgs;
-            // Xlear everything out so a new event can be raised
-            m_SIEvent = null;
-            m_SISender = null;
-            m_SIArgs = null;
-
-            // Trigger the event using the cached values
-            eventHandler(sender, e);
-        }
-        #endregion
 
         #region Tray icon code
         //---------------------------------------------------------------------------------------//
@@ -206,7 +182,7 @@ namespace Servie
         {
             if (!ServiceLoader.AreAllAutoStartServicesRunning && !ServiceLoader.IsStartingService)
             {
-                ServiceLoader.AutoStartServices(OnAutoStartComplete, DisplayServiceError);
+                ServiceLoader.AutoStartServices(DisplayServiceError);
             }
         }
 

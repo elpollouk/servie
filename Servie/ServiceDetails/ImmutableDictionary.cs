@@ -99,6 +99,5 @@ namespace Servie.ServiceDetails
         {
             return ((System.Collections.IEnumerable)_dict).GetEnumerator();
         }
-
     }
 }

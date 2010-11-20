@@ -1,18 +1,21 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Servie
 {
     static class Program
     {
+        #region WinAPI imports for previous instance communication
         [DllImport("user32.dll")]
         static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndNextChild, string lpClassName, string lpWindowName);
         [DllImport("User32.dll", EntryPoint = "SendMessage")]
         public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
         public const int WM_USER = 0x400;
+        #endregion
 
         private static frmMain s_MainWindow = null;
         public static frmMain MainWindow
@@ -31,6 +34,8 @@ namespace Servie
             Process[] prev = Process.GetProcessesByName(procName);
             if (prev.Length > 1)
             {
+                // A previous instance is running, so now to find the window for that instance so
+                // that we can send it a message to activate
                 IntPtr hwnd = FindWindowEx(IntPtr.Zero, IntPtr.Zero, null, "Servie");
                 if (hwnd != IntPtr.Zero)
                 {
@@ -39,8 +44,10 @@ namespace Servie
                 return;
             }
 
+            // Load up all the configuration files
             ServiceDetails.ServiceLoader.LoadCommonEnvironment();
             ServiceDetails.ServiceLoader.LoadServices(DisplayServiceLoadError);
+            // Did anything load?
             if (ServiceDetails.ServiceLoader.NumLoadedServices == 0)
             {
                 MessageBox.Show("No services loaded.", "Servie", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -59,5 +66,74 @@ namespace Servie
         {
             MessageBox.Show(message, service, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+
+        #region Scheduled invoke API
+        // A simple API to schedule an event handler to be called at somepoint in the future
+        private static System.Threading.Timer s_Timer = new System.Threading.Timer(OnTimer);
+        private static int s_InvokeId = 12345; // Used to make sure a cancel request comes from the code that issued the request
+        private static EventHandler m_SIEvent = null;
+        private static object m_SISender = null;
+        private static EventArgs m_SIArgs = null;
+
+        private static void OnTimer(object o)
+        {
+            lock (s_Timer)
+            {
+                // Disable the timer
+                s_Timer.Change(Timeout.Infinite, Timeout.Infinite);
+                if (m_SIEvent == null) return; // The invoke was cancelled
+
+                EventHandler eventHandler = m_SIEvent;
+                object sender = m_SISender;
+                EventArgs e = m_SIArgs;
+                int oldId = s_InvokeId;
+
+                // Clear everything out so a new event can be raised
+                m_SIEvent = null;
+                m_SISender = null;
+                m_SIArgs = null;
+
+                // Trigger the event using the cached values
+                MainWindow.Invoke(eventHandler, sender, e);
+                if (oldId == s_InvokeId)
+                {
+                    // Invalidate the current invoke id if a new invoke hasn't been scheduled
+                    // This is just a precaution
+                    s_InvokeId++;
+                }
+            }
+        }
+
+        // Schedule an event handler to be invoked in the future
+        public static int ScheduledInvoke(EventHandler evnt, object sender, EventArgs args, int delay)
+        {
+            if (m_SIEvent != null) throw new Exception("An event is already scheduled.");
+            if (evnt == null) throw new ArgumentNullException();
+
+            m_SIEvent = evnt;
+            m_SISender = sender;
+            m_SIArgs = args;
+
+            s_Timer.Change(delay, Timeout.Infinite);
+            s_InvokeId++;
+            return s_InvokeId;
+        }
+
+        // Cancel a scheduled invoke
+        public static void CancelScheduledInvoke(int invokeId)
+        {
+            lock (s_Timer)
+            {
+                if (invokeId == s_InvokeId)
+                {
+                    s_Timer.Change(Timeout.Infinite, Timeout.Infinite);
+                    m_SIEvent = null;
+                    m_SISender = null;
+                    m_SIArgs = null;
+                    s_InvokeId++;
+                }
+            }
+        }
+        #endregion
     }
 }

@@ -1,4 +1,8 @@
-﻿using System;
+﻿/*
+ * Core service implementation.
+ * This class controls start and stopping of services along with parsing their servie configuration files.
+ */
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,11 +10,14 @@ using System.Xml.Linq;
 
 namespace Servie.ServiceDetails
 {
+    // Thrown if a configuration file indicates that this service should be ignored.
+    // This is only an exception because parsing happens in the constructor
     public class IgnoreServiceException : Exception
     {
         public IgnoreServiceException() { }
     }
 
+    // Thrown if there is a problem parsing the configuration file or if required elements are missing.
     public class ParserError : Exception
     {
         public ParserError(string message) : base(message) { }
@@ -19,6 +26,7 @@ namespace Servie.ServiceDetails
     public class Service
     {
         private string m_Name = null;
+        private string m_DisplayName = null;
         private string m_WorkingDir;
         private Process m_Process;
         private IStopCommand m_StopCommand;
@@ -28,8 +36,10 @@ namespace Servie.ServiceDetails
         private int m_StartWaitTime = 0;
         private int m_StopTimeOut = 0;
         private bool m_Ignore = false;
+        private int m_InvokeId = -1;
 
         #region Handlers for process events
+        // Service TTY events
         public event DataReceivedEventHandler OutputDataReceived
         {
             add
@@ -41,7 +51,6 @@ namespace Servie.ServiceDetails
                 m_Process.OutputDataReceived -= value;
             }
         }
-
         public event DataReceivedEventHandler ErrorDataReceived
         {
             add
@@ -54,19 +63,21 @@ namespace Servie.ServiceDetails
             }
         }
 
-        private EventHandler _Ended;
-        public event EventHandler Ended
+        // Triggered when a service start request is issued
+        private EventHandler _StartRequested;
+        public event EventHandler StartRequested
         {
             add
             {
-                _Ended += value;
+                _StartRequested += value;
             }
             remove
             {
-                _Ended -= value;
+                _StartRequested -= value;
             }
         }
 
+        // Triggered when a service has started
         private EventHandler _Started;
         public event EventHandler Started
         {
@@ -76,37 +87,77 @@ namespace Servie.ServiceDetails
             }
             remove
             {
-                _Started += value;
+                _Started -= value;
+            }
+        }
+
+        // Triggered when a service stop has been requested
+        private EventHandler _StopRequested;
+        public event EventHandler StopRequested
+        {
+            add
+            {
+                _StopRequested += value;
+            }
+            remove
+            {
+                _StopRequested -= value;
+            }
+        }
+
+        // Triggered when a service has stopped
+        private EventHandler _Stopped;
+        public event EventHandler Stopped
+        {
+            add
+            {
+                _Stopped += value;
+            }
+            remove
+            {
+                _Stopped -= value;
             }
         }
         #endregion
 
         #region Exposed read only properties
+        // The exit code returned from the process.
         public int ExitCode
         {
             get { return m_ExitCode; }
         }
 
+        // The name of this service.
         public string Name
         {
             get { return m_Name; }
         }
 
+        // The human readable display name of thos service
+        public string DisplayName
+        {
+            get { return m_DisplayName; }
+        }
+
+        // Returns true if this service is currently running.
         public bool IsRunning
         {
             get { return m_IsRunning; }
         }
 
+        // Returns true if this is an auto started service.
         public bool Autostart
         {
             get { return m_Autostart; }
         }
 
+        // The delay needed after starting this service to confirm that it has started correctly.
         public int StartWaitTime
         {
             get { return m_StartWaitTime; }
         }
 
+        // The time needed to stop the service. If the service is still running after this time, then there has been a problem.
         public int StopTimeOut
         {
             get { return m_StopTimeOut; }
@@ -145,9 +196,11 @@ namespace Servie.ServiceDetails
                 Parse(doc.Root);
             }
 
+            // Validate that all the required info from the config files has been provided
             ValidateStartInfo();
 
-            if (m_Name == null) m_Name = name;
+            m_Name = name;
+            if (m_DisplayName == null) m_DisplayName = name;
             m_Process.StartInfo.FileName = Path.GetFullPath(m_Process.StartInfo.FileName);
 
             // Configure common process setting for all services
@@ -189,7 +242,7 @@ namespace Servie.ServiceDetails
             x = root.Element("name");
             if (x != null)
             {
-                m_Name = x.Value;
+                m_DisplayName = x.Value;
             }
 
             // Is this an autostarted service?
@@ -288,31 +341,66 @@ namespace Servie.ServiceDetails
         #endregion
 
         #region Service control functions
+        // Start the service if it's not running
         public void Start()
         {
-            bool r = m_Process.Start();
-            if (r)
+            if (!IsRunning)
             {
-                m_ExitCode = 0;
-                m_Process.BeginOutputReadLine();
-                m_Process.BeginErrorReadLine();
-                m_IsRunning = true;
-                if (_Started != null)
+                if (_StartRequested != null)
                 {
-                    _Started(this, null);
+                    _StartRequested(this, null);
+                }
+
+                bool r = m_Process.Start();
+                if (r == true)
+                {
+                    m_ExitCode = 0;
+                    m_Process.BeginOutputReadLine();
+                    m_Process.BeginErrorReadLine();
+                    m_IsRunning = true;
+
+                    if (StartWaitTime != 0)
+                    {
+                        // We need to wait a little bit before we can confirm if the service has started
+                        m_InvokeId = Program.ScheduledInvoke(CheckServiceIsRunning, this, null, StartWaitTime);
+                    }
+                    else
+                    {
+                        // No need to wait to see if the service has started, just assume it has
+                        if (_Started != null)
+                        {
+                            _Started(this, null);
+                        }
+                    }
+                }
+                else
+                {
+                    // Failed to start the service so clear things up and call event handlers
+                    m_ExitCode = -1;
+                    m_Process.Close();
+                    if (_Stopped != null)
+                    {
+                        _Stopped(this, null);
+                    }
                 }
             }
         }
 
+        // Stop a running service
         public void Stop(bool blocking = false)
         {
             if (IsRunning)
             {
+                if (_StopRequested != null)
+                {
+                    _StopRequested(this, null);
+                }
                 m_Process.StandardInput.Close();
                 m_StopCommand.Stop(m_Process, blocking);
             }
         }
 
+        // Kill the service (not a very safe thing to do!)
         public void Kill()
         {
             try
@@ -321,19 +409,47 @@ namespace Servie.ServiceDetails
             }
             catch { }
         }
+
+        // This function is sheduled to be invoked after StartWaitTime milliseconds.
+        // It checks to make sure the service has started and triggers the _Started event.
+        private void CheckServiceIsRunning(object sender, EventArgs e)
+        {
+            // We can probably assume that the service is running
+            lock (m_Process)
+            {
+                if (m_Process.HasExited == false)
+                {
+                    if (_Started != null)
+                    {
+                        _Started(this, null);
+                    }
+                }
+            }
+        }
         #endregion
 
         #region Local process event handlers
+        // Called by the process when if exits
         private void OnEnded(object sender, EventArgs e)
         {
-            m_IsRunning = false;
-            m_ExitCode = m_Process.ExitCode;
+            // This actually comes from the process thread, so we need to sync with the start wait time incase we fail at the exact time that the check time expires
+            lock (m_Process)
+            {
+                m_IsRunning = false;
+                m_ExitCode = m_Process.ExitCode;
 
-            _Ended(this, e);
+                m_Process.CancelOutputRead();
+                m_Process.CancelErrorRead();
+                m_Process.Close();
 
-            m_Process.CancelOutputRead();
-            m_Process.CancelErrorRead();
-            m_Process.Close();
+                // Cancel our scheduled invoke as we don't need to check anymore
+                Program.CancelScheduledInvoke(m_InvokeId);
+
+                if (_Stopped != null)
+                {
+                    Program.MainWindow.BeginInvoke(_Stopped, this, e);
+                }
+            }
         }
         #endregion
     }
