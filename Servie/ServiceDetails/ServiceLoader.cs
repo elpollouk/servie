@@ -21,15 +21,11 @@ namespace Servie.ServiceDetails
         private static ErrorMessageHandler _DisplayError = null;
         private static Stack<Service> s_AutoStartStack = null;
 
+        #region Properties
         // Returns a plain list of services 
         public static IEnumerable<Service> Services
         {
             get { return s_Services.Values; }
-        }
-
-        public static int NumServices
-        {
-            get { return s_Services.Count; }
         }
 
         // Returns an immutable dictionary of services
@@ -43,6 +39,75 @@ namespace Servie.ServiceDetails
         {
             get { return s_ImmutableEnv; }
         }
+
+        // Return the number of loaded services
+        public static int NumLoadedServices
+        {
+            get { return s_Services.Count; }
+        }
+
+        // Return the number of running services
+        public static int NumRunningServices
+        {
+            get
+            {
+                int count = 0;
+                foreach (Service service in s_Services.Values)
+                {
+                    if (service.IsRunning)
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+
+        // Returns true if a service is currently starting
+        public static bool IsStartingService
+        {
+            get { return s_AutoStartStack != null; }
+        }
+
+        // Returns true is all autostart services are running
+        public static bool AreAllAutoStartServicesRunning
+        {
+            get
+            {
+                foreach (Service service in s_Services.Values)
+                {
+                    if (service.Autostart && !service.IsRunning) return false;
+                }
+                return true;
+            }
+        }
+
+        // Returns true if all services are running
+        public static bool AreAllServicesRunning
+        {
+            get
+            {
+                foreach (Service service in s_Services.Values)
+                {
+                    if (!service.IsRunning) return false;
+                }
+                return true;
+            }
+        }
+
+        // Returns true if no services are running
+        public static bool AreAllServicesStopped
+        {
+            get
+            {
+                foreach (Service service in s_Services.Values)
+                {
+                    if (service.IsRunning) return false;
+                }
+                return true;
+            }
+        }
+        #endregion
 
         // Loads the common environment variables
         public static void LoadCommonEnvironment()
@@ -184,33 +249,6 @@ namespace Servie.ServiceDetails
             {
                 if (service.IsRunning) service.Stop(blocking);
             }
-        }
-
-        public static bool AreAllAutoStartServicesRunning()
-        {
-            foreach (Service service in s_Services.Values)
-            {
-                if (service.Autostart && !service.IsRunning) return false;
-            }
-            return true;
-        }
-
-        public static bool AreAllServicesRunning()
-        {
-            foreach (Service service in s_Services.Values)
-            {
-                if (!service.IsRunning) return false;
-            }
-            return true;
-        }
-
-        public static bool AreAllServicesStopped()
-        {
-            foreach (Service service in s_Services.Values)
-            {
-                if (service.IsRunning) return false;
-            }
-            return true;
         }
 
         private static void StartNextService(object sender, EventArgs e)

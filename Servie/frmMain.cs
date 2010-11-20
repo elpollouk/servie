@@ -58,7 +58,7 @@ namespace Servie
 
         void Exit()
         {
-            if (!ServiceLoader.AreAllServicesStopped())
+            if (!ServiceLoader.AreAllServicesStopped)
             {
                 if (timerClosing.Enabled == false)
                 {
@@ -76,7 +76,7 @@ namespace Servie
         private void timerClosing_Tick(object sender, EventArgs e)
         {
             m_ExitTimeout--;
-            if (ServiceLoader.AreAllServicesStopped())
+            if (ServiceLoader.AreAllServicesStopped)
             {
                 timerClosing.Enabled = false;
                 m_HideOnClose = false;
@@ -121,7 +121,8 @@ namespace Servie
         private void OnAutoStartComplete(object sender, EventArgs e)
         {
             trayIcon.BalloonTipTitle = "Servie";
-            if (ServiceLoader.AreAllAutoStartServicesRunning())
+            trayIcon.BalloonTipIcon = ToolTipIcon.Info;
+            if (ServiceLoader.AreAllAutoStartServicesRunning)
             {
                 trayIcon.BalloonTipText = "All services started successfully.";
             }
@@ -184,6 +185,7 @@ namespace Servie
         }
         #endregion
 
+        #region Tray icon code
         //---------------------------------------------------------------------------------------//
         // Context Menu
         //---------------------------------------------------------------------------------------//
@@ -202,7 +204,7 @@ namespace Servie
 
         private void startAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ServiceLoader.AreAllAutoStartServicesRunning())
+            if (!ServiceLoader.AreAllAutoStartServicesRunning && !ServiceLoader.IsStartingService)
             {
                 ServiceLoader.AutoStartServices(OnAutoStartComplete, DisplayServiceError);
             }
@@ -210,7 +212,7 @@ namespace Servie
 
         private void stopAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (!ServiceLoader.AreAllServicesStopped())
+            if (!ServiceLoader.AreAllServicesStopped)
             {
                 ServiceLoader.StopAllServices();
             }
@@ -220,5 +222,6 @@ namespace Servie
         {
             m_About.Show();
         }
+        #endregion
     }
 }

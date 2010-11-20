@@ -41,7 +41,7 @@ namespace Servie
 
             ServiceDetails.ServiceLoader.LoadCommonEnvironment();
             ServiceDetails.ServiceLoader.LoadServices(DisplayServiceLoadError);
-            if (ServiceDetails.ServiceLoader.NumServices == 0)
+            if (ServiceDetails.ServiceLoader.NumLoadedServices == 0)
             {
                 MessageBox.Show("No services loaded.", "Servie", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }

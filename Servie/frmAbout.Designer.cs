@@ -40,7 +40,7 @@
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(12, 12);
+            this.pictureBox1.Location = new System.Drawing.Point(0, 12);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(190, 190);
             this.pictureBox1.TabIndex = 0;
@@ -48,6 +48,7 @@
             // 
             // cmdOk
             // 
+            this.cmdOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdOk.Location = new System.Drawing.Point(365, 179);
             this.cmdOk.Name = "cmdOk";
             this.cmdOk.Size = new System.Drawing.Size(75, 23);
@@ -60,7 +61,7 @@
             // 
             this.lblServie.AutoSize = true;
             this.lblServie.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblServie.Location = new System.Drawing.Point(207, 13);
+            this.lblServie.Location = new System.Drawing.Point(195, 13);
             this.lblServie.Name = "lblServie";
             this.lblServie.Size = new System.Drawing.Size(77, 20);
             this.lblServie.TabIndex = 2;
@@ -69,7 +70,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(208, 33);
+            this.label1.Location = new System.Drawing.Point(196, 33);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(164, 13);
             this.label1.TabIndex = 3;
@@ -78,7 +79,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(209, 50);
+            this.label2.Location = new System.Drawing.Point(197, 50);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(170, 13);
             this.label2.TabIndex = 4;
@@ -98,6 +99,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmAbout";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "About Servie";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmAbout_FormClosing);

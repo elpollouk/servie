@@ -1,14 +1,11 @@
 <xml>
-  <name>Dummie (Failed Start)</name>
   <autostart>false</autostart>
 
   <start>
     <exec>
       <executable>..\dummie\dummie.exe</executable>
-      <args>"{0} Failing!!" 1000 2</args>
+      <args>"{0} SPAM! SPAM! SPAM! SPAM! SPAM!" 100</args>
     </exec>
-
-    <wait>3000</wait>
   </start>
   
   <stop>

@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Windows.Forms;
+using Servie.ServiceDetails;
 
 namespace Servie
 {
     public partial class ConsoleTab : TabPage
     {
-        private ServiceDetails.Service m_Service;
+        private Service m_Service;
 
-        public ServiceDetails.Service Service
+        public Service Service
         {
             get { return m_Service; }
         }
 
-        public ConsoleTab(ServiceDetails.Service service)
+        public ConsoleTab(Service service)
         {
             InitializeComponent();
 
@@ -91,7 +92,10 @@ namespace Servie
             }
             else
             {
-                ServiceDetails.ServiceLoader.StartService(m_Service, OnStartComplete, null);
+                if (ServiceLoader.IsStartingService == false)
+                {
+                    ServiceLoader.StartService(m_Service, OnStartComplete, null);
+                }
             }
         }
 
