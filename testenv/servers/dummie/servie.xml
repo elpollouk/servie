@@ -21,7 +21,7 @@
       This only needs to be set if the working dir is different to the server base dir.
       <workingdir>\some\other\path</workingdir>
     -->
-      <executable>..\dummie\dummie.exe</executable>
+      <executable>dummie.exe</executable>
     <!--
       Command line arguments for the executables.
       <args>...</args>
@@ -56,6 +56,12 @@
   <!--
     Kills the process to end the service
     <kill/>
+  -->
+  <!--
+	Execute an external command. See the xml\start\exec tag for details.
+	<exec>
+		...
+	</exec>
   -->
   <!--
     Shutdown time out after which the user will the prompted if they want to continue waiting. If the user doesn't wait, then the process will be killed.
