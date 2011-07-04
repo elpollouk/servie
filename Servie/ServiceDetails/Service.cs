@@ -244,6 +244,7 @@ namespace Servie.ServiceDetails
             if (x != null)
             {
                 m_Ignore = (x.Value.ToLower() == "true");
+                return;
             }
 
             // Set up the basic service details

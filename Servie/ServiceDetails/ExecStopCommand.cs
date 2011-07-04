@@ -37,7 +37,7 @@ namespace Servie.ServiceDetails
 
 
         // Service TTY events
-        public event DataReceivedEventHandler OutputDataReceived
+        public new event DataReceivedEventHandler OutputDataReceived
         {
             add
             {
@@ -48,7 +48,7 @@ namespace Servie.ServiceDetails
                 Command.OutputDataReceived -= value;
             }
         }
-        public event DataReceivedEventHandler ErrorDataReceived
+        public new event DataReceivedEventHandler ErrorDataReceived
         {
             add
             {
