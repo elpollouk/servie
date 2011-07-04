@@ -179,10 +179,8 @@ namespace Servie.ServiceDetails
 
             // Create process and populate it with the default environment
             m_Process = CreateStandardProccess();
-            foreach (KeyValuePair<string, string> var in ServiceLoader.CommonEnvironment)
-            {
-                m_Process.StartInfo.EnvironmentVariables[var.Key] = var.Value;
-            }
+            m_Process.EnableRaisingEvents = true;
+            m_Process.Exited += OnEnded;
 
             // Parse the server supplied details
             XDocument doc = XDocument.Load(m_WorkingDir + "\\servie.xml");
@@ -215,8 +213,11 @@ namespace Servie.ServiceDetails
             p.StartInfo.RedirectStandardError = true;
             p.StartInfo.RedirectStandardInput = true;
 
-            p.EnableRaisingEvents = true;
-            p.Exited += OnEnded;
+            // Add all the vars from the common environment
+            foreach (KeyValuePair<string, string> var in ServiceLoader.CommonEnvironment)
+            {
+               p.StartInfo.EnvironmentVariables[var.Key] = var.Value;
+            }
 
             return p;
         }
@@ -272,6 +273,9 @@ namespace Servie.ServiceDetails
             XElement x = node.Element("exec");
             if (x != null) ParseExec(m_Process.StartInfo, x);
 
+            // Set the working directory again as it might have been changed
+            m_WorkingDir = m_Process.StartInfo.WorkingDirectory;
+
             x = node.Element("wait");
             if (x != null)
             {
@@ -286,24 +290,35 @@ namespace Servie.ServiceDetails
             {
                 if (n.Name == "signal")
                 {
+                    // Send a signal to the child process
                     m_StopCommand = new StoppieStopCommand(n.Value);
                     break;
                 }
                 else if (n.Name == "kill")
                 {
+                    // Plain old kill of the child process
                     m_StopCommand = new KillStopCommand();
                     break;
                 }
                 else if (n.Name == "exec")
                 {
-                    Process stopCommand = CreateStandardProccess();
-                    // Clear out this event as we don't want it registered here
-                    stopCommand.EnableRaisingEvents = false;
-                    stopCommand.Exited -= OnEnded;
+                    // Execute an external command to stop the child process
+                    Process stopCommand = null;
+                    ExecStopCommand esc = m_StopCommand as ExecStopCommand;
+
+                    // Check if we already have a stop command so that we can update it with this parsed info
+                    if (esc == null)
+                    {
+                        stopCommand = CreateStandardProccess();
+                        m_StopCommand = new ExecStopCommand(stopCommand);
+                    }
+                    else
+                    {
+                        stopCommand = esc.Command;
+                    }
 
                     ParseExec(stopCommand.StartInfo, n);
 
-                    m_StopCommand = new ExecStopCommand(stopCommand);
                     break;
                 }
             }
@@ -321,12 +336,16 @@ namespace Servie.ServiceDetails
         private void ParseExec(ProcessStartInfo startInfo, XElement node)
         {
             XElement x;
+
             x = node.Element("workingdir");
             if (x != null)
             {
-                m_WorkingDir = x.Value;
+                startInfo.WorkingDirectory = x.Value;
             }
-            startInfo.WorkingDirectory = m_WorkingDir;
+            else
+            {
+                startInfo.WorkingDirectory = m_WorkingDir;
+            }
 
             x = node.Element("executable");
             if (x != null)
@@ -334,7 +353,7 @@ namespace Servie.ServiceDetails
                 startInfo.FileName = x.Value;
                 if (!File.Exists(startInfo.FileName))
                 {
-                    startInfo.FileName = Path.Combine(m_WorkingDir, startInfo.FileName);
+                    startInfo.FileName = Path.Combine(startInfo.WorkingDirectory, startInfo.FileName);
                 }
             }
 
@@ -349,10 +368,6 @@ namespace Servie.ServiceDetails
             {
                 foreach (XElement evar in x.Descendants())
                 {
-                    //if (startInfo.EnvironmentVariables.ContainsKey(evar.Name.LocalName))
-                    //{
-                    //    startInfo.EnvironmentVariables.Remove(evar.Name.LocalName);
-                    //}
                     startInfo.EnvironmentVariables[evar.Name.LocalName] = evar.Value;
                 }
             }

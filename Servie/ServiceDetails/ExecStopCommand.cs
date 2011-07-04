@@ -8,18 +8,26 @@ namespace Servie.ServiceDetails
 {
     class ExecStopCommand : StopCommandBase, IStopCommand
     {
-        private Process m_Command;
-
         public ExecStopCommand(Process command)
         {
-            m_Command = command;
+            Command = command;
+        }
+
+        public Process Command
+        {
+            get;
+            private set;
         }
 
         public void Stop(Process process, bool blocking)
         {
-            m_Command.Start();
-            m_Command.WaitForExit();
-            m_Command.Close();
+            Command.Start();
+            Command.BeginOutputReadLine();
+            Command.BeginErrorReadLine();
+            Command.WaitForExit();
+            Command.CancelOutputRead();
+            Command.CancelErrorRead();
+            Command.Close();
 
             if (blocking)
             {
@@ -33,22 +41,22 @@ namespace Servie.ServiceDetails
         {
             add
             {
-                m_Command.OutputDataReceived += value;
+                Command.OutputDataReceived += value;
             }
             remove
             {
-                m_Command.OutputDataReceived -= value;
+                Command.OutputDataReceived -= value;
             }
         }
         public event DataReceivedEventHandler ErrorDataReceived
         {
             add
             {
-                m_Command.ErrorDataReceived += value;
+                Command.ErrorDataReceived += value;
             }
             remove
             {
-                m_Command.ErrorDataReceived -= value;
+                Command.ErrorDataReceived -= value;
             }
         }
     }
