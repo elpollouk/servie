@@ -45,10 +45,12 @@ namespace Servie.ServiceDetails
             add
             {
                 m_Process.OutputDataReceived += value;
+                m_StopCommand.OutputDataReceived += value;
             }
             remove
             {
                 m_Process.OutputDataReceived -= value;
+                m_StopCommand.OutputDataReceived -= value;
             }
         }
         public event DataReceivedEventHandler ErrorDataReceived
@@ -56,10 +58,12 @@ namespace Servie.ServiceDetails
             add
             {
                 m_Process.ErrorDataReceived += value;
+                m_StopCommand.ErrorDataReceived += value;
             }
             remove
             {
                 m_Process.ErrorDataReceived -= value;
+                m_StopCommand.ErrorDataReceived -= value;
             }
         }
 
@@ -174,14 +178,10 @@ namespace Servie.ServiceDetails
             }
 
             // Create process and populate it with the default environment
-            m_Process = new Process();
+            m_Process = CreateStandardProccess();
             foreach (KeyValuePair<string, string> var in ServiceLoader.CommonEnvironment)
             {
-                if (m_Process.StartInfo.EnvironmentVariables.ContainsKey(var.Key))
-                {
-                    m_Process.StartInfo.EnvironmentVariables.Remove(var.Key);
-                }
-                m_Process.StartInfo.EnvironmentVariables.Add(var.Key, var.Value);
+                m_Process.StartInfo.EnvironmentVariables[var.Key] = var.Value;
             }
 
             // Parse the server supplied details
@@ -202,16 +202,23 @@ namespace Servie.ServiceDetails
             m_Name = name;
             if (m_DisplayName == null) m_DisplayName = name;
             m_Process.StartInfo.FileName = Path.GetFullPath(m_Process.StartInfo.FileName);
+        }
+
+        private Process CreateStandardProccess()
+        {
+            Process p = new Process();
 
             // Configure common process setting for all services
-            m_Process.StartInfo.UseShellExecute = false;
-            m_Process.StartInfo.CreateNoWindow = true;
-            m_Process.StartInfo.RedirectStandardOutput = true;
-            m_Process.StartInfo.RedirectStandardError = true;
-            m_Process.StartInfo.RedirectStandardInput = true;
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.CreateNoWindow = true;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.RedirectStandardError = true;
+            p.StartInfo.RedirectStandardInput = true;
 
-            m_Process.EnableRaisingEvents = true;
-            m_Process.Exited += OnEnded;
+            p.EnableRaisingEvents = true;
+            p.Exited += OnEnded;
+
+            return p;
         }
 
         // Validate that the service has been configured correctly
@@ -287,6 +294,18 @@ namespace Servie.ServiceDetails
                     m_StopCommand = new KillStopCommand();
                     break;
                 }
+                else if (n.Name == "exec")
+                {
+                    Process stopCommand = CreateStandardProccess();
+                    // Clear out this event as we don't want it registered here
+                    stopCommand.EnableRaisingEvents = false;
+                    stopCommand.Exited -= OnEnded;
+
+                    ParseExec(stopCommand.StartInfo, n);
+
+                    m_StopCommand = new ExecStopCommand(stopCommand);
+                    break;
+                }
             }
 
             XElement x;
@@ -330,11 +349,11 @@ namespace Servie.ServiceDetails
             {
                 foreach (XElement evar in x.Descendants())
                 {
-                    if (startInfo.EnvironmentVariables.ContainsKey(evar.Name.LocalName))
-                    {
-                        startInfo.EnvironmentVariables.Remove(evar.Name.LocalName);
-                    }
-                    startInfo.EnvironmentVariables.Add(evar.Name.LocalName, evar.Value);
+                    //if (startInfo.EnvironmentVariables.ContainsKey(evar.Name.LocalName))
+                    //{
+                    //    startInfo.EnvironmentVariables.Remove(evar.Name.LocalName);
+                    //}
+                    startInfo.EnvironmentVariables[evar.Name.LocalName] = evar.Value;
                 }
             }
         }

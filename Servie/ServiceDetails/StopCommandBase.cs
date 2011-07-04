@@ -12,5 +12,16 @@ namespace Servie.ServiceDetails
             process.CancelOutputRead();
             process.WaitForExit();
         }
+
+        public event DataReceivedEventHandler OutputDataReceived
+        {
+            add {}
+            remove {}
+        }
+        public event DataReceivedEventHandler ErrorDataReceived
+        {
+            add {}
+            remove {}
+        }
     }
 }

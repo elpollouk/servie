@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Servie.ServiceDetails
 {
-    class KillStopCommand : IStopCommand
+    class KillStopCommand : StopCommandBase, IStopCommand
     {
         public void Stop(Process process, bool blocking)
         {

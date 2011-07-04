@@ -84,6 +84,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceDetails\ExecStopCommand.cs" />
     <Compile Include="ServiceDetails\ImmutableDictionary.cs" />
     <Compile Include="ServiceDetails\IStopCommand.cs" />
     <Compile Include="ServiceDetails\KillStopCommand.cs" />
